@@ -4,14 +4,16 @@ import { View, Text, ScrollView } from 'react-native';
 export default function App() {
 
 
-  var coins = { btcusdt: 0, ethusdt: 0, shibusdt: 0 };
+  const [coins, setCoins] = useState(['btcusdt', 'ethusdt', 'shibusdt'])
+  const [myMap, setMyMap] = useState(new Map()); //declaring and 
 
   useEffect(() => {
 
-    for (var key in coins) {
-      console.log("key " + key + " has value " + coins[key]);
 
-      var ws = new WebSocket(`wss://stream.binance.com:9443/ws/${key}@trade`);
+    coins.forEach((coin) => {
+
+      console.log("Arama yapılacak coin:", coin)
+      var ws = new WebSocket(`wss://stream.binance.com:9443/ws/${coin}@trade`);
 
       ws.onopen = () => {
 
@@ -22,9 +24,12 @@ export default function App() {
 
         const response = JSON.parse(e.data)
 
-        coins[response.s.toLowerCase()] = response.p
+        setMyMap(myMap.set(response.s.toLowerCase(), response.p))
 
-        console.log("izleme listem:", coins)
+
+        for (let [key, value] of myMap) {
+          console.log(key + " - " + value);
+        }
 
       };
 
@@ -35,7 +40,11 @@ export default function App() {
         console.log("Closed:", e.code, e.reason);
         ws.close();
       };
-    }
+
+    })
+
+
+
   }, [])
 
 
@@ -44,8 +53,12 @@ export default function App() {
       <Text>
         crypto tracker
       </Text>
-      <Text>{coins[0]}</Text>
-
+      
+      <View>
+        {[...myMap.keys()].map(k => (
+          <Text key={k}>myMap.get(k)</Text>
+        ))}
+      </View>
 
     </ScrollView>
   );
