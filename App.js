@@ -4,16 +4,24 @@ import { View, Text, ScrollView } from 'react-native';
 export default function App() {
 
 
-  const [coins, setCoins] = useState(['btcusdt', 'ethusdt', 'shibusdt'])
-  const [myMap, setMyMap] = useState(new Map()); //declaring and 
+  const [symbols, setSymbols] = useState(['btcusdt', 'ethusdt', 'shibusdt'])
+  const [coinDatas, setCoinDatas] = useState([]);
+
 
   useEffect(() => {
 
+    symbols.forEach((symbol) => {//izleme listesindeki symbollerin her biri için obje oluşturup diziye atıyoruz
+      body = {
+        s: symbol,
+        p: 0
+      }
+      setCoinDatas(oldArray => [...oldArray, body]);
+    })
 
-    coins.forEach((coin) => {
+    symbols.forEach((symbol) => {
 
-      console.log("Arama yapılacak coin:", coin)
-      var ws = new WebSocket(`wss://stream.binance.com:9443/ws/${coin}@trade`);
+      console.log("Arama yapılacak coin:", symbol)
+      var ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol}@trade`);
 
       ws.onopen = () => {
 
@@ -24,12 +32,25 @@ export default function App() {
 
         const response = JSON.parse(e.data)
 
-        setMyMap(myMap.set(response.s.toLowerCase(), response.p))
+        setCoinDatas(prevCoinDatas => {
+          added = false
+          prevCoinDatas.forEach((prevCoinData) => {
+            if (prevCoinData.s === response.s) {
+              prevC
+            }else{
 
+            }
+          })
+          if (condition) {
+            return {
+              ...prevCoinDatas,
+              todos: [...prevCoinDatas.todos, newObj]
+            }
+          } else {
+            return prevCoinDatas
+          }
+        })
 
-        for (let [key, value] of myMap) {
-          console.log(key + " - " + value);
-        }
 
       };
 
@@ -43,22 +64,22 @@ export default function App() {
 
     })
 
-
-
   }, [])
 
+
+  useEffect(() => {
+
+    console.log("coinDatas:", coinDatas)
+
+  }, [coinDatas])
 
   return (
     <ScrollView>
       <Text>
         crypto tracker
       </Text>
-      
-      <View>
-        {[...myMap.keys()].map(k => (
-          <Text key={k}>myMap.get(k)</Text>
-        ))}
-      </View>
+
+
 
     </ScrollView>
   );
