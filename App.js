@@ -4,24 +4,16 @@ import { View, Text, ScrollView } from 'react-native';
 export default function App() {
 
 
-  const [symbols, setSymbols] = useState(['btcusdt', 'ethusdt', 'shibusdt'])
-  const [coinDatas, setCoinDatas] = useState([]);
-
+  const [coins, setCoins] = useState(['btcusdt', 'ethusdt', 'shibusdt'])
+  const [myMap, setMyMap] = useState(new Map()); //declaring and 
 
   useEffect(() => {
 
-    symbols.forEach((symbol) => {//izleme listesindeki symbollerin her biri için obje oluşturup diziye atıyoruz
-      body = {
-        s: symbol,
-        p: 0
-      }
-      setCoinDatas(oldArray => [...oldArray, body]);
-    })
 
-    symbols.forEach((symbol) => {
+    coins.forEach((coin) => {
 
-      console.log("Arama yapılacak coin:", symbol)
-      var ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol}@trade`);
+      console.log("Arama yapılacak coin:", coin)
+      var ws = new WebSocket(`wss://stream.binance.com:9443/ws/${coin}@trade`);
 
       ws.onopen = () => {
 
@@ -32,24 +24,7 @@ export default function App() {
 
         const response = JSON.parse(e.data)
 
-        setCoinDatas(prevCoinDatas => {
-          added = false
-          prevCoinDatas.forEach((prevCoinData) => {
-            if (prevCoinData.s === response.s) {
-              prevC
-            }else{
-
-            }
-          })
-          if (condition) {
-            return {
-              ...prevCoinDatas,
-              todos: [...prevCoinDatas.todos, newObj]
-            }
-          } else {
-            return prevCoinDatas
-          }
-        })
+        setMyMap(new Map(myMap.set(response.s.toLowerCase(), response.p)))
 
 
       };
@@ -66,20 +41,29 @@ export default function App() {
 
   }, [])
 
-
   useEffect(() => {
 
-    console.log("coinDatas:", coinDatas)
+    for (let [key, value] of myMap) {
+      console.log(key + " - " + value);
+    }
+  }, [myMap])
 
-  }, [coinDatas])
 
   return (
     <ScrollView>
-      <Text>
-        crypto tracker
+      <Text style={{ fontSize: 25, marginVertical: 20 , marginLeft:5}}>
+        Crypto Tracker
       </Text>
 
-
+      <View>
+        {
+          [...myMap].map((entry) => {
+            let key = entry[0]
+            let value = entry[1]
+            return <Text style={{fontWeight:'bold', fontSize:25}} key={key}> {key.toUpperCase()} :  {value}</Text>
+          })
+        }
+      </View>
 
     </ScrollView>
   );
