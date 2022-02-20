@@ -4,32 +4,38 @@ import { View, Text, ScrollView } from 'react-native';
 export default function App() {
 
 
-  var ws = new WebSocket('wss://stream.binance.com:9443/ws/!ticker@arr');
-  const [coins, setCoins] = useState([])
+  var coins = { btcusdt: 0, ethusdt: 0, shibusdt: 0 };
 
   useEffect(() => {
 
-    ws.onopen = () => {
+    for (var key in coins) {
+      console.log("key " + key + " has value " + coins[key]);
 
-    };
-    ws.onmessage = (e) => {
-      console.log("incoming data:", JSON.parse(e.data))
-      //gelen datalardan sadece usdt pariteli olanları al | filter
+      var ws = new WebSocket(`wss://stream.binance.com:9443/ws/${key}@trade`);
 
-      
-      const coins = JSON.parse(e.data)
-      let coinsWithUsdtParity = coins.filter(coin => coin.s.includes("USDT")).sort();
-      console.log("filtered array:", coinsWithUsdtParity)
-      setCoins(coinsWithUsdtParity);
-    };
-    ws.onerror = (e) => {
-      console.log(`Error: ${e.message}`);
-    };
-    ws.onclose = (e) => {
-      console.log("Closed:", e.code, e.reason);
-      ws.close();
-    };
+      ws.onopen = () => {
 
+      };
+
+      ws.onmessage = (e) => {
+        console.log("incoming data:", JSON.parse(e.data))
+
+        const response = JSON.parse(e.data)
+
+        coins[response.s.toLowerCase()] = response.p
+
+        console.log("izleme listem:", coins)
+
+      };
+
+      ws.onerror = (e) => {
+        console.log(`Error: ${e.message}`);
+      };
+      ws.onclose = (e) => {
+        console.log("Closed:", e.code, e.reason);
+        ws.close();
+      };
+    }
   }, [])
 
 
@@ -38,12 +44,9 @@ export default function App() {
       <Text>
         crypto tracker
       </Text>
-      {
-        coins.map((coin) => (
-          <Text key={coin.s}>{coin.s} : {coin.c}</Text>
-        )
-        )
-      }
+      <Text>{coins[0]}</Text>
+
+
     </ScrollView>
   );
 }
