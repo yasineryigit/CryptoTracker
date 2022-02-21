@@ -1,105 +1,75 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, FlatList, StyleSheet, SafeAreaView } from 'react-native';
-import ListItem from './src/components/ListItem';
+import { View, Text, ScrollView } from 'react-native';
 
 export default function App() {
 
 
-  const [coins, setCoins] = useState([])
+  const [symbols, setSymbols] = useState(['btcusdt', 'ethusdt', 'shibusdt'])
+  const [coinDatas, setCoinDatas] = useState([]);
 
 
   useEffect(() => {
 
 
-    var ws = new WebSocket(`wss://stream.binance.com:9443/ws/!miniTicker@arr`);
+    symbols.forEach((symbol) => {
 
-    ws.onopen = () => {
+      console.log("Arama yapılacak coin:", symbol)
+      var ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol}@trade`);
 
-    };
+      ws.onopen = () => {
+        console.log("websocket'e bağlantı açıldı: ", symbol)
+      };
 
-    ws.onmessage = (e) => {
-      console.log("incoming data:", JSON.parse(e.data))
+      ws.onmessage = (e) => {
+        console.log("incoming data:", JSON.parse(e.data))
 
-      const response = JSON.parse(e.data)
-
-      response.sort(function (a, b) {
-        return a.s.localeCompare(b.s);
-      });
-
-      console.log("gelen response: ", response)
-      setCoins(response)
-
-
-    };
-
-    ws.onerror = (e) => {
-      console.log(`Error: ${e.message}`);
-    };
-    ws.onclose = (e) => {
-      console.log("Closed:", e.code, e.reason);
-      ws.close();
-    };
+        const response = JSON.parse(e.data)
+        found = false
+        coinDatas.forEach((coinData) => {
+          console.log("we are inside foreach")
+          if (coinData.s === response.s) {//eldeki coinDatas listesine daha önce eklenmişse fiyatı güncelle
+            found = true
+            console.log("daha önce eklenmiş")
+            coinDatas.filter(item => item.s !== coinData.s)//bulunan objeyi çıkar 
+            setCoinDatas(prevCoinDatas => [...prevCoinDatas, response])//yerine gelen objeyi ekle
+          }
+        })
+        if (!found) {//eldeki coinDatas listesine daha önce eklenmemişse
+          console.log("daha önce eklenmemiş")
+          setCoinDatas(prevCoinDatas => [...prevCoinDatas, response])//yerine gelen objeyi ekle
+        }
 
 
+
+      };
+
+      ws.onerror = (e) => {
+        console.log(`Error: ${e.message}`);
+      };
+      ws.onclose = (e) => {
+        console.log("Closed:", e.code, e.reason);
+        ws.close();
+      };
+
+    })
 
   }, [])
 
-  const ListHeader = () => (
-    <>
-      <View style={styles.titleWrapper}>
-        <Text style={styles.largeTitle}>Markets</Text>
-      </View>
-      <View style={styles.divider} />
-    </>
-  )
 
+  useEffect(() => {
+
+    console.log("coinDatas:", coinDatas)
+
+  }, [coinDatas])
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ScrollView>
+      <Text>
+        crypto tracker
+      </Text>
 
-      <FlatList
-        keyExtractor={(item) => item.s}
-        data={coins}
-        renderItem={({ item }) => (
-          <ListItem
-            symbol={item.s}
-            currentPrice={item.c}
-          />
-        )}
-        ListHeaderComponent={<ListHeader />}
-      />
 
-    </SafeAreaView>
+
+    </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  titleWrapper: {
-    marginTop: 20,
-    paddingHorizontal: 16,
-  },
-  largeTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-  },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: '#A9ABB1',
-    marginHorizontal: 16,
-    marginTop: 16,
-  },
-  bottomSheet: {
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: -4,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-});
