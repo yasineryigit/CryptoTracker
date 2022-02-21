@@ -1,75 +1,41 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, ScrollView, FlatList, StyleSheet, SafeAreaView } from 'react-native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { NavigationContainer } from '@react-navigation/native'
+import { createStackNavigator } from '@react-navigation/stack'
+import MyTabs from './src/navigation/MyTabs';
+import { MenuProvider } from 'react-native-popup-menu';
+
+const Stack = createStackNavigator()
+
+const MyStackNavigator = () => {
+  return (
+
+    <Stack.Navigator
+      initialRouteName="MyTabs"
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+
+      <Stack.Screen name="MyTabs"
+        options={{ headerShown: false }} component={MyTabs} />
+
+
+    </Stack.Navigator>
+  )
+}
 
 export default function App() {
 
-
-  const [symbols, setSymbols] = useState(['btcusdt', 'ethusdt', 'shibusdt'])
-  const [coinDatas, setCoinDatas] = useState([]);
-
-
-  useEffect(() => {
-
-
-    symbols.forEach((symbol) => {
-
-      console.log("Arama yapılacak coin:", symbol)
-      var ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol}@trade`);
-
-      ws.onopen = () => {
-        console.log("websocket'e bağlantı açıldı: ", symbol)
-      };
-
-      ws.onmessage = (e) => {
-        console.log("incoming data:", JSON.parse(e.data))
-
-        const response = JSON.parse(e.data)
-        found = false
-        coinDatas.forEach((coinData) => {
-          console.log("we are inside foreach")
-          if (coinData.s === response.s) {//eldeki coinDatas listesine daha önce eklenmişse fiyatı güncelle
-            found = true
-            console.log("daha önce eklenmiş")
-            coinDatas.filter(item => item.s !== coinData.s)//bulunan objeyi çıkar 
-            setCoinDatas(prevCoinDatas => [...prevCoinDatas, response])//yerine gelen objeyi ekle
-          }
-        })
-        if (!found) {//eldeki coinDatas listesine daha önce eklenmemişse
-          console.log("daha önce eklenmemiş")
-          setCoinDatas(prevCoinDatas => [...prevCoinDatas, response])//yerine gelen objeyi ekle
-        }
-
-
-
-      };
-
-      ws.onerror = (e) => {
-        console.log(`Error: ${e.message}`);
-      };
-      ws.onclose = (e) => {
-        console.log("Closed:", e.code, e.reason);
-        ws.close();
-      };
-
-    })
-
-  }, [])
-
-
-  useEffect(() => {
-
-    console.log("coinDatas:", coinDatas)
-
-  }, [coinDatas])
-
   return (
-    <ScrollView>
-      <Text>
-        crypto tracker
-      </Text>
+    <MenuProvider>
+      <NavigationContainer>
 
+        <MyStackNavigator />
 
-
-    </ScrollView>
+      </NavigationContainer>
+    </MenuProvider>
   );
+
 }
