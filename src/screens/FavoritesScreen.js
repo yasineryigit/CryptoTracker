@@ -27,24 +27,34 @@ export default function FavoritesScreen() {
     const fetchCoins = () => {
         timer.current = setInterval(() => {
 
-            setCoinDatas([]);
-            savedFavorites.forEach((savedFavorite) => {
+            savedFavorites.forEach((savedFavorite, index) => {
                 if (savedFavorite !== "null") {
                     getCoin(savedFavorite).then((response) => {
                         console.log("gelen response:", response.data)
-                        let data = response.data
+                        found = false
+                        console.log("iterate edilecek coinDatas length:", coinDatas.length)
+                        coinDatas.forEach((coinData) => {//eklenmemişse ekle
+                            console.log("eldeki dizi id:", coinData.id, " gelen data id:", response.data.id)
+                            if (coinData.id === response.data.id) {
+                                found = true
+                            }
+                        })
 
-                        setCoinDatas(
-                            coinDatas.map(item =>
-                                item.id === index.id
-                                    ? { item: data }
-                                    : { ...item, data }
-                            ))
+                        console.log("found:", found)
+                        if (!found) {//daha önce eklenmediyse ekle
+                            console.log("daha önce eklenmemiş")
+                            setCoinDatas(prevCoinDatas => [...prevCoinDatas, response.data]);
+                        } else {//daha önce eklendiyse güncelle
+                            console.log("güncelleniyor:")
+                            let newArr = [...coinDatas]; // copying the old datas array
+                            newArr[index] = response.data; // replace e.target.value with whatever you want to change it to
+
+                            setCoinDatas(newArr);
+                        }
+
                     })
                 }
             })
-
-
         }, 2000);
 
     }
@@ -73,7 +83,7 @@ export default function FavoritesScreen() {
     return (
         <View style={styles.container}>
             <Text>this is my favorites</Text>
-            {
+            {/*
                 <FlatList
                     keyExtractor={(item) => item.id}
                     data={coinDatas}
@@ -89,7 +99,7 @@ export default function FavoritesScreen() {
                         />
                     )}
                     ListHeaderComponent={<ListHeader />}
-                />
+                />*/
             }
         </View>
     );
