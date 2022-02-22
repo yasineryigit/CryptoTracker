@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, FlatList } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getCoin } from '../api/apiCalls';
+import ListItem from '../components/ListItem';
 
 export default function FavoritesScreen() {
 
@@ -11,32 +12,43 @@ export default function FavoritesScreen() {
 
     useEffect(() => {
         getFavorites()
-
-
-        timer.current = setInterval(() => {
-            setCoinDatas([]);
-            savedFavorites.forEach((savedFavorite) => {
-                if (savedFavorite === "null") {
-                    getCoin(savedFavorite).then((response) => {
-                        console.log("gelen response:", response.data)
-                        setCoinDatas(prevCoinDatas => [...prevCoinDatas, response.data]);
-                    })
-                } else {
-                    console.log("null'ü atladım")
-                }
-
-            })
-
-        }, 4000);//her saniye, o kodu okutan kişileri getir
-
     }, [])
 
+    useEffect(() => {
+        fetchCoins()
+    }, [savedFavorites])
 
     useEffect(() => {
 
         console.log("coinDatas:", coinDatas)
 
     }, [coinDatas])
+
+    const fetchCoins = () => {
+        timer.current = setInterval(() => {
+
+            setCoinDatas([]);
+            savedFavorites.forEach((savedFavorite) => {
+                if (savedFavorite !== "null") {
+                    getCoin(savedFavorite).then((response) => {
+                        console.log("gelen response:", response.data)
+                        let data = response.data
+
+                        setCoinDatas(
+                            coinDatas.map(item =>
+                                item.id === index.id
+                                    ? { item: data }
+                                    : { ...item, data }
+                            ))
+                    })
+                }
+            })
+
+
+        }, 2000);
+
+    }
+
 
     const getFavorites = async () => {
         try {
@@ -49,14 +61,35 @@ export default function FavoritesScreen() {
         }
     }
 
+    const ListHeader = () => (
+        <>
+            <View style={styles.titleWrapper}>
+                <Text style={styles.largeTitle}>Favorites</Text>
+            </View>
+            <View style={styles.divider} />
+        </>
+    )
+
     return (
         <View style={styles.container}>
-            <Text>This is favorites screen</Text>
-            <Text>Favorited coins:</Text>
+            <Text>this is my favorites</Text>
             {
-                savedFavorites.map((savedFavorite) => (
-                    <Text key={savedFavorite}>{savedFavorite}</Text>
-                ))
+                <FlatList
+                    keyExtractor={(item) => item.id}
+                    data={coinDatas}
+                    renderItem={({ item }) => (
+                        <ListItem
+                            name={item.name}
+                            symbol={item.symbol}
+                            currentPrice={item.market_data.current_price.usd}
+                            price_change_percentage_24h={item.market_data.price_change_percentage_24h}
+                            logoUrl={item.image.thumb}
+                            onPress={() => { }
+                            }
+                        />
+                    )}
+                    ListHeaderComponent={<ListHeader />}
+                />
             }
         </View>
     );
@@ -65,6 +98,30 @@ export default function FavoritesScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        margin: 5
-    }
-})
+        backgroundColor: '#fff',
+    },
+    titleWrapper: {
+        marginTop: 20,
+        paddingHorizontal: 16,
+    },
+    largeTitle: {
+        fontSize: 24,
+        fontWeight: "bold",
+    },
+    divider: {
+        height: StyleSheet.hairlineWidth,
+        backgroundColor: '#A9ABB1',
+        marginHorizontal: 16,
+        marginTop: 16,
+    },
+    bottomSheet: {
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: -4,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+});

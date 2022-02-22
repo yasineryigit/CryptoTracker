@@ -62,7 +62,7 @@ export default function MarketScreen() {
     }
 
     return (
-        <View>
+        <View style={styles.container}>
 
             <FlatList
                 keyExtractor={(item) => item.id}
@@ -92,7 +92,7 @@ export default function MarketScreen() {
                     alignItems: 'center'
                 }}
             >
-                <MenuTrigger text='Select action' />
+                <MenuTrigger text='' />
                 <MenuOptions >
                     <MenuOption onSelect={() => {
 
