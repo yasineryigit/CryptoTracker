@@ -7,7 +7,8 @@ import ListItem from '../components/ListItem';
 export default function FavoritesScreen() {
 
     const [savedFavorites, setSavedFavorites] = useState([])
-    const [coinDatas, setCoinDatas] = useState([])
+    const [coinDatas, setCoinDatas] = useState([...savedFavorites])
+    const [renderList, setRenderList] = useState(false)
     const timer = useRef();
 
     useEffect(() => {
@@ -15,56 +16,88 @@ export default function FavoritesScreen() {
     }, [])
 
     useEffect(() => {
-        fetchCoins()
-    }, [savedFavorites])
-
-    useEffect(() => {
-
         console.log("coinDatas:", coinDatas)
 
-    }, [coinDatas])
-
-    const fetchCoins = () => {
-        timer.current = setInterval(() => {
-
-            savedFavorites.forEach((savedFavorite, index) => {
-                if (savedFavorite !== "null") {
-                    getCoin(savedFavorite).then((response) => {
-                        console.log("gelen response:", response.data)
-                        found = false
-                        console.log("iterate edilecek coinDatas length:", coinDatas.length)
-                        coinDatas.forEach((coinData) => {//eklenmemişse ekle
-                            console.log("eldeki dizi id:", coinData.id, " gelen data id:", response.data.id)
-                            if (coinData.id === response.data.id) {
-                                found = true
-                            }
-                        })
-
-                        console.log("found:", found)
-                        if (!found) {//daha önce eklenmediyse ekle
-                            console.log("daha önce eklenmemiş")
-                            setCoinDatas(prevCoinDatas => [...prevCoinDatas, response.data]);
-                        } else {//daha önce eklendiyse güncelle
-                            console.log("güncelleniyor:")
-                            let newArr = [...coinDatas]; // copying the old datas array
-                            newArr[index] = response.data; // replace e.target.value with whatever you want to change it to
-
-                            setCoinDatas(newArr);
-                        }
-
-                    })
+        if (coinDatas.length > 0) {
+            let render = true
+            coinDatas.forEach((coinData) => {
+                console.log("data type: ", typeof coinData.market_data)
+                if (typeof coinData.market_data === 'undefined') {
+                    console.log("undefined var")
+                    render = false
                 }
             })
-        }, 2000);
+            setRenderList(render)
+            console.log("render: ", render)
+        }
+    }, [coinDatas])
+
+    useEffect(() => {
+        timer.current = setInterval(() => {
+            fetchCoins()
+        }, 3000)
+
+        return () => {
+            clearInterval(timer.current)
+        }
+    }, [savedFavorites])
+
+
+
+    const fetchCoins = () => {
+
+        savedFavorites.forEach((savedFavorite) => {
+            getCoin(savedFavorite).then((response) => {
+                console.log("gelen response:", response.data)
+
+                index = coinDatas.findIndex(coinData => coinData.id === response.data.id);
+                /*
+                let newArr = [...coinDatas]; // copying the old datas array
+                console.log("eldeki array: ", newArr)
+                console.log("güncellenecek index: ", newArr[index])
+                newArr[index] = response.data; // replace e.target.value with whatever you want to change it to
+                console.log("coinDatas updated:", newArr)
+                setCoinDatas(newArr);
+*/
+                setCoinDatas(coinDatas => {
+                    let newArr = [...coinDatas]; // copying the old datas array
+                    newArr[index] = response.data; // replace e.target.value with whatever you want to change it to
+                    return newArr
+                })
+
+
+            })
+
+        })
 
     }
 
+    /*
+        const isAdded = (responseId) => {
+            found = false
+            coinDatas.forEach((coinData) => {//eklenmemişse ekle
+                //console.log("eldeki dizi id:", coinData.id, " gelen data id:", responseId)
+                if (coinData.id === responseId) {
+                    found = true
+                }
+            })
+            return found
+        }
+    */
 
     const getFavorites = async () => {
         try {
             var savedFavorites = await AsyncStorage.getItem('favorites')
-            const myArray = savedFavorites.split(",");
+            const myArrayWithNull = savedFavorites.split(",");
+            let myArray = myArrayWithNull.filter(item => item !== 'null');
             console.log("Splited array: ", myArray)
+            myArray.forEach((item) => {
+                body = {
+                    id: item,
+                }
+                setCoinDatas(prevCoinDatas => [...prevCoinDatas, body]);
+
+            })
             setSavedFavorites(myArray)
         } catch (e) {
             console.log("error:", e)
@@ -82,8 +115,9 @@ export default function FavoritesScreen() {
 
     return (
         <View style={styles.container}>
-            <Text>this is my favorites</Text>
-            {/*
+
+            {
+                renderList &&
                 <FlatList
                     keyExtractor={(item) => item.id}
                     data={coinDatas}
@@ -99,7 +133,7 @@ export default function FavoritesScreen() {
                         />
                     )}
                     ListHeaderComponent={<ListHeader />}
-                />*/
+                />
             }
         </View>
     );
