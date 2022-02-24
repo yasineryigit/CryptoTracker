@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View } from 'react-native';
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -6,13 +6,32 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import Icon from 'react-native-vector-icons/FontAwesome';
 import MarketScreen from '../screens/MarketScreen';
 import FavoritesScreen from '../screens/FavoritesScreen';
+import { getAllCoins } from '../api/apiCalls';
 
 
 const Tab = createBottomTabNavigator();
 
 const MyTabs = () => {
 
+    const [coinDatas, setCoinDatas] = useState([]);
+    const timer = useRef();
+
+    useEffect(() => {
+        timer.current = setInterval(() => {
+            getAllCoins().then((response) => {
+                setCoinDatas(response.data)
+                console.log("mytabs interval working")
+            }).catch((error) => {
+            })
+        }, 1000)
+
+        return () => {
+            clearInterval(timer.current)
+        }
+    }, [])
+
     return (
+
         <Tab.Navigator
             screenOptions={{
                 tabBarShowLabel: false,
@@ -40,6 +59,9 @@ const MyTabs = () => {
             <Tab.Screen
                 name="MarketScreen"
                 component={MarketScreen}
+                initialParams={{
+                    coinDatas
+                }}
                 options={{
                     tabBarLabel: 'Market',
                     tabBarIcon: ({ color }) => (
@@ -50,6 +72,9 @@ const MyTabs = () => {
             <Tab.Screen
                 name="FavoritesScreen"
                 component={FavoritesScreen}
+                initialParams={{
+                    coinDatas
+                }}
                 options={{
                     tabBarLabel: 'Favorites',
                     tabBarIcon: ({ color }) => (

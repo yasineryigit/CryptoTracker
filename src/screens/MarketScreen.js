@@ -23,15 +23,8 @@ export default function MarketScreen() {
 
     useFocusEffect(
         React.useCallback(() => {
-
             if (isRunning) {
-                funRef.current = setInterval(() => { // Save reference to interval.
-                    getAllCoins().then((response) => {
-                        setCoinDatas(response.data)
-                        console.log("marketscreen interval working")
-                    }).catch((error) => {
-                    })
-                }, 1000);
+                console.log("marketscreen gelen props:", props)
             }
             return () => {
                 clearInterval(funRef.current); // Stop the interval.

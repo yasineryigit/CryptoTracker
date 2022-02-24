@@ -13,7 +13,7 @@ import {
 } from 'react-native-popup-menu';
 
 
-export default function FavoritesScreen() {
+export default function FavoritesScreen(props) {
 
     const [savedFavorites, setSavedFavorites] = useState([])//@REMOVABLE
     const [allCoins, setAllCoins] = useState([])
@@ -28,14 +28,7 @@ export default function FavoritesScreen() {
 
     useFocusEffect(
         React.useCallback(() => {
-            if (isRunning) {
-                console.log("favoritesscreen focused")
-                getFavorites()//güncel takip listesini al
-                funRef.current = setInterval(() => { // Save reference to interval.
-                    fetchAllCoins()
-                    console.log("favoritesscreen interval working")
-                }, 1000);
-            }
+            console.log("favorites screen gelen props:", props)
             return () => {
                 console.log("favoritesscreen unfocused")
                 setFavoritedCoins([])
@@ -127,7 +120,7 @@ export default function FavoritesScreen() {
             console.log("error while async storage:", e)
         }
     }
-    
+
     const ListHeader = () => (
         <>
             <View style={styles.titleWrapper}>
