@@ -1,44 +1,60 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getCoin } from '../api/apiCalls';
+import { getAllCoins, getCoin } from '../api/apiCalls';
 import ListItem from '../components/ListItem';
 import { useFocusEffect } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
+import {
+    Menu,
+    MenuOptions,
+    MenuOption,
+    MenuTrigger,
+} from 'react-native-popup-menu';
 
 
 export default function FavoritesScreen() {
 
-    const [savedFavorites, setSavedFavorites] = useState([])
-    const [coinDatas, setCoinDatas] = useState([...savedFavorites])
+    const [savedFavorites, setSavedFavorites] = useState([])//@REMOVABLE
+    const [allCoins, setAllCoins] = useState([])
+    const [favoritedCoins, setFavoritedCoins] = useState([])
     const [renderList, setRenderList] = useState(false)
-    const timer = useRef();
+    const [isRunning, setIsRunning] = useState(true);
+    const funRef = useRef(null);
+    const [openMenu, setOpenMenu] = useState(false);
+    const [selectedCoin, setSelectedCoin] = useState('')
+
+
 
     useFocusEffect(
         React.useCallback(() => {
-
-            console.log("favoritesscreen focused")
-            getFavorites()
-
+            if (isRunning) {
+                console.log("favoritesscreen focused")
+                getFavorites()//güncel takip listesini al
+                funRef.current = setInterval(() => { // Save reference to interval.
+                    fetchAllCoins()
+                    console.log("favoritesscreen interval working")
+                }, 1000);
+            }
             return () => {
-
                 console.log("favoritesscreen unfocused")
-                setCoinDatas([])
+                setFavoritedCoins([])
                 setSavedFavorites([])
                 setRenderList(false)
+                clearInterval(funRef.current); // Stop the interval.
             };
         }, [])
     );
 
 
     useEffect(() => {
-        console.log("coinDatas:", coinDatas)
+        console.log("favoritedCoins:", favoritedCoins)
 
-        if (coinDatas.length > 0) {
+        if (favoritedCoins.length > 0) {
             let render = true
-            coinDatas.forEach((coinData) => {
-                console.log("data type: ", typeof coinData.market_data)
-                if (typeof coinData.market_data === 'undefined') {
+            favoritedCoins.forEach((favoritedCoin) => {
+                console.log("data type: ", typeof favoritedCoin.current_price)
+                if (typeof favoritedCoin.current_price === 'undefined') {
                     console.log("undefined var")
                     render = false
                 }
@@ -46,67 +62,72 @@ export default function FavoritesScreen() {
             setRenderList(render)
             console.log("render: ", render)
         }
-    }, [coinDatas])
+    }, [favoritedCoins])
+
 
     useEffect(() => {
-        timer.current = setInterval(() => {
-            fetchCoins()
-        }, 3000)
-
-        return () => {
-            clearInterval(timer.current)
-        }
-    }, [savedFavorites])
-
-
-
-    const fetchCoins = () => {
-
-        savedFavorites.forEach((savedFavorite) => {
-            getCoin(savedFavorite).then((response) => {
-                console.log("gelen response:", response.data)
-
-                index = coinDatas.findIndex(coinData => coinData.id === response.data.id);
-                /*
-                let newArr = [...coinDatas]; // copying the old datas array
-                console.log("eldeki array: ", newArr)
-                console.log("güncellenecek index: ", newArr[index])
-                newArr[index] = response.data; // replace e.target.value with whatever you want to change it to
-                console.log("coinDatas updated:", newArr)
-                setCoinDatas(newArr);
-*/
-                setCoinDatas(coinDatas => {
-                    let newArr = [...coinDatas]; // copying the old datas array
-                    newArr[index] = response.data; // replace e.target.value with whatever you want to change it to
-                    return newArr
-                })
-
-
+        allCoins.forEach((coin, coinIndex) => {
+            favoritedCoins.forEach((favoritedCoin, favoritedCoinIndex) => {
+                if (coin.id === favoritedCoin.id) {
+                    setFavoritedCoins(favoritedCoins => {
+                        let newArr = [...favoritedCoins]; // copying the old datas array
+                        newArr[favoritedCoinIndex] = allCoins[coinIndex]; // replace e.target.value with whatever you want to change it to
+                        return newArr
+                    })
+                }
             })
-
         })
+    }, [allCoins])
 
+
+    const fetchAllCoins = () => {
+
+        getAllCoins().then((response) => {
+            console.log("gelen response:", response.data)
+            setAllCoins(response.data)
+        })
     }
 
     const getFavorites = async () => {
         try {
             var savedFavorites = await AsyncStorage.getItem('favorites')
-            const myArrayWithNull = savedFavorites.split(",");
-            let myArray = myArrayWithNull.filter(item => item !== 'null');
-            console.log("Splited array: ", myArray)
-            myArray.forEach((item) => {
-                body = {
-                    id: item,
-                }
-                setCoinDatas(prevCoinDatas => [...prevCoinDatas, body]);
+            if (savedFavorites != null) {
+                JSON.parse(savedFavorites).forEach((item) => {
+                    body = {
+                        id: item,
+                    }
+                    setFavoritedCoins(prevFavoritedCoins => [...prevFavoritedCoins, body]);//add favoriteObject with only id
+                })
+                setSavedFavorites(JSON.parse(savedFavorites))//@REMOVABLE
+            }
 
-            })
-            setSavedFavorites(myArray)
+
         } catch (e) {
             console.log("error:", e)
         }
     }
 
+
+    const deleteFromFavorites = async () => {
+
+        try {
+            const jsonValue = await AsyncStorage.getItem('favorites')
+            if (jsonValue !== null) { //if saved value is not null then push into it
+                var filteredFavoriteCoins = favoritedCoins.filter(function (value, index, arr) {
+                    return value.id !== selectedCoin;
+                });
+                var filteredJsonValue = JSON.parse(jsonValue).filter(function (value, index, arr) {
+                    return value !== selectedCoin;
+                });
+                //console.log("silindikten sonra filteredFavoriteCoins:", filteredFavoriteCoins);
+                setFavoritedCoins(filteredFavoriteCoins)//delete from state array
+                await AsyncStorage.setItem('favorites', JSON.stringify(filteredJsonValue))//delete from local storage
+            }
+        } catch (e) {
+            console.log("error while async storage:", e)
+        }
+    }
+    
     const ListHeader = () => (
         <>
             <View style={styles.titleWrapper}>
@@ -122,15 +143,18 @@ export default function FavoritesScreen() {
             {
                 renderList ? (<FlatList
                     keyExtractor={(item) => item.id}
-                    data={coinDatas}
+                    data={favoritedCoins}
                     renderItem={({ item }) => (
                         <ListItem
                             name={item.name}
                             symbol={item.symbol}
-                            currentPrice={item.market_data.current_price.usd}
-                            price_change_percentage_24h={item.market_data.price_change_percentage_24h}
-                            logoUrl={item.image.thumb}
-                            onPress={() => { }
+                            currentPrice={item.current_price}
+                            price_change_percentage_24h={item.price_change_percentage_24h}
+                            logoUrl={item.image}
+                            onPress={() => {
+                                setOpenMenu(true)
+                                setSelectedCoin(item.id)
+                            }
                             }
                         />
                     )}
@@ -155,8 +179,27 @@ export default function FavoritesScreen() {
                         />
                     </View>
                 )
-
             }
+
+            <Menu
+                opened={openMenu}
+                style={{
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                }}
+            >
+                <MenuTrigger text='' />
+                <MenuOptions >
+                    <MenuOption onSelect={() => {
+
+                        deleteFromFavorites()
+                        setOpenMenu(false)
+                    }
+                    } text='Remove from favorites' />
+
+                    <MenuOption onSelect={() => setOpenMenu(false)} text='Cancel' />
+                </MenuOptions>
+            </Menu>
         </View>
     );
 }

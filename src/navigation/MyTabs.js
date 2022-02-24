@@ -43,7 +43,6 @@ const MyTabs = () => {
                 options={{
                     tabBarLabel: 'Market',
                     tabBarIcon: ({ color }) => (
-                        
                         <Icon name="home" color={color} size={26} />
                     ),
                 }}

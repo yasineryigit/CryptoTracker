@@ -9,6 +9,7 @@ import {
     MenuTrigger,
 } from 'react-native-popup-menu';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 
 
 export default function MarketScreen() {
@@ -16,20 +17,27 @@ export default function MarketScreen() {
     const [coinDatas, setCoinDatas] = useState([]);
     const [openMenu, setOpenMenu] = useState(false);
     const [selectedCoin, setSelectedCoin] = useState('')
-    const timer = useRef();
+    const [isRunning, setIsRunning] = useState(true);
+    const funRef = useRef(null);
 
-    useEffect(() => {
 
-        timer.current = setInterval(() => {
+    useFocusEffect(
+        React.useCallback(() => {
 
-            getAllCoins().then((response) => {
-                setCoinDatas(response.data)
-            }).catch((error) => {
-                console.log("error while fetching market data:", error)
-            })
-        }, 1000);//her saniye, o kodu okutan kişileri getir
-
-    }, [])
+            if (isRunning) {
+                funRef.current = setInterval(() => { // Save reference to interval.
+                    getAllCoins().then((response) => {
+                        setCoinDatas(response.data)
+                        console.log("marketscreen interval working")
+                    }).catch((error) => {
+                    })
+                }, 1000);
+            }
+            return () => {
+                clearInterval(funRef.current); // Stop the interval.
+            };
+        }, [])
+    );
 
 
     useEffect(() => {
@@ -48,18 +56,25 @@ export default function MarketScreen() {
     )
 
     const saveSelectedCoin = async () => {
+
         try {
-            var savedFavorites = await AsyncStorage.getItem('favorites')
-            console.log("savedFavorites: ", savedFavorites)
-            savedFavorites += ("," + selectedCoin)
-            console.log("kaydedilecek: ", savedFavorites)
-            AsyncStorage.setItem('favorites', savedFavorites).then(() => {
-                console.log(selectedCoin, " added")
-            })
-            alert(`${selectedCoin} added\n Current favorites:${savedFavorites}`)
+            const jsonValue = await AsyncStorage.getItem('favorites')
+            if (jsonValue !== null) { //if saved value is not null then push into it
+                let value = JSON.parse(jsonValue)
+                value.push(selectedCoin)
+                console.log("kaydedilecek array:", value)
+                await AsyncStorage.setItem('favorites', JSON.stringify(value))
+            } else {//if saved value is null then push array
+                let favorites = [];
+                favorites.push(selectedCoin)
+                console.log("kaydedilecek array:", favorites)
+                await AsyncStorage.setItem('favorites', JSON.stringify(favorites))
+            }
+
         } catch (e) {
-            console.log("error:", e)
+            console.log("error while async storage:", e)
         }
+
 
     }
 
@@ -97,7 +112,6 @@ export default function MarketScreen() {
                 <MenuTrigger text='' />
                 <MenuOptions >
                     <MenuOption onSelect={() => {
-
                         saveSelectedCoin()
                         setOpenMenu(false)
                     }
