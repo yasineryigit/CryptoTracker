@@ -24,6 +24,8 @@ export default function MarketScreen() {
 
             getAllCoins().then((response) => {
                 setCoinDatas(response.data)
+            }).catch((error) => {
+                console.log("error while fetching market data:", error)
             })
         }, 1000);//her saniye, o kodu okutan kişileri getir
 

@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, FlatList } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getCoin } from '../api/apiCalls';
 import ListItem from '../components/ListItem';
+import { useFocusEffect } from '@react-navigation/native';
+
 
 export default function FavoritesScreen() {
 
@@ -11,9 +13,22 @@ export default function FavoritesScreen() {
     const [renderList, setRenderList] = useState(false)
     const timer = useRef();
 
-    useEffect(() => {
-        getFavorites()
-    }, [])
+    useFocusEffect(
+        React.useCallback(() => {
+
+            console.log("favoritesscreen focused")
+            getFavorites()
+
+            return () => {
+
+                console.log("favoritesscreen unfocused")
+                setCoinDatas([])
+                setSavedFavorites([])
+                setRenderList(false)
+            };
+        }, [])
+    );
+
 
     useEffect(() => {
         console.log("coinDatas:", coinDatas)
@@ -71,19 +86,6 @@ export default function FavoritesScreen() {
         })
 
     }
-
-    /*
-        const isAdded = (responseId) => {
-            found = false
-            coinDatas.forEach((coinData) => {//eklenmemişse ekle
-                //console.log("eldeki dizi id:", coinData.id, " gelen data id:", responseId)
-                if (coinData.id === responseId) {
-                    found = true
-                }
-            })
-            return found
-        }
-    */
 
     const getFavorites = async () => {
         try {
