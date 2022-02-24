@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getCoin } from '../api/apiCalls';
 import ListItem from '../components/ListItem';
 import { useFocusEffect } from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
 
 
 export default function FavoritesScreen() {
@@ -119,8 +120,7 @@ export default function FavoritesScreen() {
         <View style={styles.container}>
 
             {
-                renderList &&
-                <FlatList
+                renderList ? (<FlatList
                     keyExtractor={(item) => item.id}
                     data={coinDatas}
                     renderItem={({ item }) => (
@@ -134,8 +134,28 @@ export default function FavoritesScreen() {
                             }
                         />
                     )}
-                    ListHeaderComponent={<ListHeader />}
-                />
+                    ListHeaderComponent={<ListHeader />
+                    }
+                />) : (
+                    <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                        <LottieView
+                            source={require('../assets/loading.json')}
+                            autoPlay
+                            loop={true}
+                            style={{
+                                width: 80,
+                                height: 80,
+                                marginBottom: 8,
+                            }}
+                            speed={0.5}
+                            onAnimationFinish={() => {
+                                //console.log('Animation Finished!')
+                                // this.props.navigation.replace('Home');
+                            }}
+                        />
+                    </View>
+                )
+
             }
         </View>
     );
