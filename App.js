@@ -5,6 +5,7 @@ import { NavigationContainer } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
 import MyTabs from './src/navigation/MyTabs';
 import { MenuProvider } from 'react-native-popup-menu';
+import Toast from 'react-native-toast-message';
 
 const Stack = createStackNavigator()
 
@@ -29,13 +30,25 @@ const MyStackNavigator = () => {
 export default function App() {
 
   return (
-    <MenuProvider>
-      <NavigationContainer>
+    <>
+      <MenuProvider style={styles.container}>
+        <NavigationContainer>
 
-        <MyStackNavigator />
+          <MyStackNavigator />
 
-      </NavigationContainer>
-    </MenuProvider>
+        </NavigationContainer>
+
+      </MenuProvider>
+      <Toast />
+    </>
+
   );
 
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingTop: 20,
+  },
+});

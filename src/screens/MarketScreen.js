@@ -10,6 +10,7 @@ import {
 } from 'react-native-popup-menu';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
+import Toast from 'react-native-toast-message';
 
 
 export default function MarketScreen() {
@@ -61,25 +62,53 @@ export default function MarketScreen() {
             const jsonValue = await AsyncStorage.getItem('favorites')
             if (jsonValue !== null) { //if saved value is not null then push into it
                 let value = JSON.parse(jsonValue)
-                value.push(selectedCoin)
-                console.log("kaydedilecek array:", value)
-                await AsyncStorage.setItem('favorites', JSON.stringify(value))
+                found = value.find(x => x === selectedCoin) ? true : false
+                if (!found) {
+                    value.push(selectedCoin)
+                    console.log("kaydedilecek array:", value)
+                    await AsyncStorage.setItem('favorites', JSON.stringify(value))
+                    showToast('success', 'Successful', `${selectedCoin} added to your favorites successfully`)
+                } else {
+                    showToast('info', 'Has been already added', `${selectedCoin} has already been added to your favorites`)
+                }
+
             } else {//if saved value is null then push array
                 let favorites = [];
                 favorites.push(selectedCoin)
                 console.log("kaydedilecek array:", favorites)
                 await AsyncStorage.setItem('favorites', JSON.stringify(favorites))
+                showToast('success', 'Successful', `${selectedCoin} added to your favorites successfully`)
             }
 
         } catch (e) {
             console.log("error while async storage:", e)
         }
+    }
 
 
+    const showToast = (type, text1, text2) => {
+        Toast.show({
+            type, text1, text2
+        });
     }
 
     return (
+
         <View style={styles.container}>
+            <Menu
+                opened={openMenu}
+            >
+                <MenuTrigger triggerOnLongPress={true} />
+                <MenuOptions >
+                    <MenuOption onSelect={() => {
+                        saveSelectedCoin()
+                        setOpenMenu(false)
+                    }
+                    } text='Add to favorites' />
+
+                    <MenuOption onSelect={() => setOpenMenu(false)} text='Cancel' />
+                </MenuOptions>
+            </Menu>
 
             <FlatList
                 keyExtractor={(item) => item.id}
@@ -94,33 +123,13 @@ export default function MarketScreen() {
                         onPress={() => {
                             setOpenMenu(true)
                             setSelectedCoin(item.id)
-                        }
-                        }
+                        }}
                     />
                 )}
-
                 ListHeaderComponent={<ListHeader />}
             />
-
-            <Menu
-                opened={openMenu}
-                style={{
-                    justifyContent: 'center',
-                    alignItems: 'center'
-                }}
-            >
-                <MenuTrigger text='' />
-                <MenuOptions >
-                    <MenuOption onSelect={() => {
-                        saveSelectedCoin()
-                        setOpenMenu(false)
-                    }
-                    } text='Add to favorites' />
-
-                    <MenuOption onSelect={() => setOpenMenu(false)} text='Cancel' />
-                </MenuOptions>
-            </Menu>
         </View>
+
     );
 }
 

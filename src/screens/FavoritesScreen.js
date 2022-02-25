@@ -11,6 +11,8 @@ import {
     MenuOption,
     MenuTrigger,
 } from 'react-native-popup-menu';
+import Toast from 'react-native-toast-message';
+
 
 
 export default function FavoritesScreen() {
@@ -23,7 +25,7 @@ export default function FavoritesScreen() {
     const funRef = useRef(null);
     const [openMenu, setOpenMenu] = useState(false);
     const [selectedCoin, setSelectedCoin] = useState('')
-
+    const [notifyEmptyList, setNotifyEmptyList] = useState(false);
 
 
     useFocusEffect(
@@ -41,6 +43,7 @@ export default function FavoritesScreen() {
                 setFavoritedCoins([])
                 setSavedFavorites([])
                 setRenderList(false)
+                setNotifyEmptyList(false);
                 clearInterval(funRef.current); // Stop the interval.
             };
         }, [])
@@ -120,14 +123,24 @@ export default function FavoritesScreen() {
                     return value !== selectedCoin;
                 });
                 //console.log("silindikten sonra filteredFavoriteCoins:", filteredFavoriteCoins);
+                if (filteredFavoriteCoins.length === 0) {//if there is no favorites, then notify user
+                    setNotifyEmptyList(true)
+                }
                 setFavoritedCoins(filteredFavoriteCoins)//delete from state array
                 await AsyncStorage.setItem('favorites', JSON.stringify(filteredJsonValue))//delete from local storage
+                showToast('error', 'Successful', `${selectedCoin} has been removed from your favorites`)
             }
         } catch (e) {
             console.log("error while async storage:", e)
         }
     }
-    
+
+    const showToast = (type, text1, text2) => {
+        Toast.show({
+            type, text1, text2
+        });
+    }
+
     const ListHeader = () => (
         <>
             <View style={styles.titleWrapper}>
@@ -138,32 +151,16 @@ export default function FavoritesScreen() {
     )
 
     return (
-        <View style={styles.container}>
 
+        <View style={styles.container}>
+            <ListHeader />
             {
-                renderList ? (<FlatList
-                    keyExtractor={(item) => item.id}
-                    data={favoritedCoins}
-                    renderItem={({ item }) => (
-                        <ListItem
-                            name={item.name}
-                            symbol={item.symbol}
-                            currentPrice={item.current_price}
-                            price_change_percentage_24h={item.price_change_percentage_24h}
-                            logoUrl={item.image}
-                            onPress={() => {
-                                setOpenMenu(true)
-                                setSelectedCoin(item.id)
-                            }
-                            }
-                        />
-                    )}
-                    ListHeaderComponent={<ListHeader />
-                    }
-                />) : (
-                    <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+
+                notifyEmptyList ?
+                    <View style={styles.notifyEmptyList}>
+                        <Text style={styles.notifyEmptyListText}>You don't have any favorites</Text>
                         <LottieView
-                            source={require('../assets/loading.json')}
+                            source={require('../assets/empty.json')}
                             autoPlay
                             loop={true}
                             style={{
@@ -178,7 +175,47 @@ export default function FavoritesScreen() {
                             }}
                         />
                     </View>
-                )
+
+                    :
+
+                    renderList ? (<FlatList
+                        keyExtractor={(item) => item.id}
+                        data={favoritedCoins}
+                        renderItem={({ item }) => (
+                            <ListItem
+                                name={item.name}
+                                symbol={item.symbol}
+                                currentPrice={item.current_price}
+                                price_change_percentage_24h={item.price_change_percentage_24h}
+                                logoUrl={item.image}
+                                onPress={() => {
+                                    setOpenMenu(true)
+                                    setSelectedCoin(item.id)
+                                }
+                                }
+                            />
+                        )}
+
+                    />) : (
+                        <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                            <LottieView
+                                source={require('../assets/loading.json')}
+                                autoPlay
+                                loop={true}
+                                style={{
+                                    width: 80,
+                                    height: 80,
+                                    marginBottom: 8,
+                                }}
+                                speed={0.5}
+                                onAnimationFinish={() => {
+                                    //console.log('Animation Finished!')
+                                    // this.props.navigation.replace('Home');
+                                }}
+                            />
+                        </View>
+                    )
+
             }
 
             <Menu
@@ -201,6 +238,7 @@ export default function FavoritesScreen() {
                 </MenuOptions>
             </Menu>
         </View>
+
     );
 }
 
@@ -233,4 +271,14 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 5,
     },
+    notifyEmptyList: {
+        position: 'absolute',
+        top: 0, left: 0,
+        right: 0, bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    notifyEmptyListText: {
+        marginBottom: 15
+    }
 });
