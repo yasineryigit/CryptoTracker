@@ -7,6 +7,7 @@ import MyTabs from './src/navigation/MyTabs';
 import { MenuProvider } from 'react-native-popup-menu';
 import Toast from 'react-native-toast-message';
 import DetailsScreen from './src/screens/DetailsScreen';
+import WebViewScreen from './src/screens/WebViewScreen';
 
 const Stack = createStackNavigator()
 
@@ -25,6 +26,9 @@ const MyStackNavigator = () => {
 
       <Stack.Screen name="DetailsScreen"
         component={DetailsScreen} />
+
+      <Stack.Screen name="WebViewScreen"
+        component={WebViewScreen} />
 
 
     </Stack.Navigator>
