@@ -13,8 +13,6 @@ import {
 } from 'react-native-popup-menu';
 import Toast from 'react-native-toast-message';
 
-
-
 export default function FavoritesScreen() {
 
     const [savedFavorites, setSavedFavorites] = useState([])//@REMOVABLE
@@ -68,7 +66,7 @@ export default function FavoritesScreen() {
     }, [favoritedCoins])
 
 
-    useEffect(() => {
+    useEffect(() => {//add datas of favorited coins
         allCoins.forEach((coin, coinIndex) => {
             favoritedCoins.forEach((favoritedCoin, favoritedCoinIndex) => {
                 if (coin.id === favoritedCoin.id) {
@@ -92,9 +90,12 @@ export default function FavoritesScreen() {
     }
 
     const getFavorites = async () => {
+
         try {
             var savedFavorites = await AsyncStorage.getItem('favorites')
-            if (savedFavorites != null) {
+            console.log("eldeki savedFavorites object:", savedFavorites)
+            if (savedFavorites != null && JSON.parse(savedFavorites).length !== 0) {
+                console.log("savedfavorites are exists")
                 JSON.parse(savedFavorites).forEach((item) => {
                     body = {
                         id: item,
@@ -102,9 +103,10 @@ export default function FavoritesScreen() {
                     setFavoritedCoins(prevFavoritedCoins => [...prevFavoritedCoins, body]);//add favoriteObject with only id
                 })
                 setSavedFavorites(JSON.parse(savedFavorites))//@REMOVABLE
+            } else {
+                console.log("savedFavorites is empty")
+                setNotifyEmptyList(true)
             }
-
-
         } catch (e) {
             console.log("error:", e)
         }

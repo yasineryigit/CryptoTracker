@@ -11,6 +11,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
+import { useNavigation } from '@react-navigation/native';
 
 
 export default function MarketScreen() {
@@ -20,7 +21,7 @@ export default function MarketScreen() {
     const [selectedCoin, setSelectedCoin] = useState('')
     const [isRunning, setIsRunning] = useState(true);
     const funRef = useRef(null);
-
+    const navigation = useNavigation();
 
     useFocusEffect(
         React.useCallback(() => {
@@ -62,22 +63,22 @@ export default function MarketScreen() {
             const jsonValue = await AsyncStorage.getItem('favorites')
             if (jsonValue !== null) { //if saved value is not null then push into it
                 let value = JSON.parse(jsonValue)
-                found = value.find(x => x === selectedCoin) ? true : false
+                found = value.find(x => x === selectedCoin.id) ? true : false
                 if (!found) {
-                    value.push(selectedCoin)
+                    value.push(selectedCoin.id)
                     console.log("kaydedilecek array:", value)
                     await AsyncStorage.setItem('favorites', JSON.stringify(value))
-                    showToast('success', 'Successful', `${selectedCoin} added to your favorites successfully`)
+                    showToast('success', 'Successful', `${selectedCoin.id} added to your favorites successfully`)
                 } else {
-                    showToast('info', 'Has been already added', `${selectedCoin} has already been added to your favorites`)
+                    showToast('info', 'Has been already added', `${selectedCoin.id} has already been added to your favorites`)
                 }
 
             } else {//if saved value is null then push array
                 let favorites = [];
-                favorites.push(selectedCoin)
+                favorites.push(selectedCoin.id)
                 console.log("kaydedilecek array:", favorites)
                 await AsyncStorage.setItem('favorites', JSON.stringify(favorites))
-                showToast('success', 'Successful', `${selectedCoin} added to your favorites successfully`)
+                showToast('success', 'Successful', `${selectedCoin.id} added to your favorites successfully`)
             }
 
         } catch (e) {
@@ -105,6 +106,12 @@ export default function MarketScreen() {
                         setOpenMenu(false)
                     }
                     } text='Add to favorites' />
+                    <MenuOption onSelect={() => {
+                        //go to details
+                        navigation.navigate("DetailsScreen", { selectedCoin })
+                        setOpenMenu(false)
+                    }
+                    } text='Show Details' />
 
                     <MenuOption onSelect={() => setOpenMenu(false)} text='Cancel' />
                 </MenuOptions>
@@ -122,7 +129,7 @@ export default function MarketScreen() {
                         logoUrl={item.image}
                         onPress={() => {
                             setOpenMenu(true)
-                            setSelectedCoin(item.id)
+                            setSelectedCoin(item)
                         }}
                     />
                 )}

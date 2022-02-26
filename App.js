@@ -6,6 +6,7 @@ import { createStackNavigator } from '@react-navigation/stack'
 import MyTabs from './src/navigation/MyTabs';
 import { MenuProvider } from 'react-native-popup-menu';
 import Toast from 'react-native-toast-message';
+import DetailsScreen from './src/screens/DetailsScreen';
 
 const Stack = createStackNavigator()
 
@@ -20,7 +21,10 @@ const MyStackNavigator = () => {
     >
 
       <Stack.Screen name="MyTabs"
-        options={{ headerShown: false }} component={MyTabs} />
+        component={MyTabs} />
+
+      <Stack.Screen name="DetailsScreen"
+        component={DetailsScreen} />
 
 
     </Stack.Navigator>
