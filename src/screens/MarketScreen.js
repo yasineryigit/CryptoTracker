@@ -108,7 +108,7 @@ export default function MarketScreen() {
                     } text='Add to favorites' />
                     <MenuOption onSelect={() => {
                         //go to details
-                        navigation.navigate("DetailsScreen", { selectedCoin })
+                        navigation.navigate("DetailsScreen", { selectedCoinId: selectedCoin.id })
                         setOpenMenu(false)
                     }
                     } text='Show Details' />
