@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import moment from 'moment';
 import Chart from '../components/Chart'
@@ -39,7 +39,7 @@ export default function DetailsScreen(props) {
     const formatMarketData = (data) => {
 
         const formattedSparkline = formatSparkline(data.sparkline_in_7d.price)
-        
+
         const formattedItem = {
             ...data,
             sparkline_in_7d: {
@@ -52,7 +52,7 @@ export default function DetailsScreen(props) {
 
     return (
         <View>
-            <Text>This is details page</Text>
+
             {
                 formattedData ?
                     (<Chart
@@ -64,8 +64,18 @@ export default function DetailsScreen(props) {
                         sparkline={formattedData?.sparkline_in_7d.price}
                     />) : null
             }
+            <View style={styles.divider} />
             <Text>News</Text>
 
         </View>
     );
 }
+
+const styles = StyleSheet.create({
+    divider: {
+        height: StyleSheet.hairlineWidth,
+        backgroundColor: '#A9ABB1',
+        marginHorizontal: 16,
+        marginTop: 16,
+    },
+})

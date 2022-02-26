@@ -12,6 +12,8 @@ const Chart = ({ currentPrice, logoUrl, name, symbol, priceChangePercentage7d, s
 
     const priceChangeColor = priceChangePercentage7d > 0 ? '#34C759' : '#FF3B30';
 
+
+
     useEffect(() => {
         latestCurrentPrice.value = currentPrice;
 
@@ -68,9 +70,7 @@ const Chart = ({ currentPrice, logoUrl, name, symbol, priceChangePercentage7d, s
                     </View>)
 
                     :
-
-                    <Text>chart is not ready</Text>
-
+                    null
                 }
 
             </View>
