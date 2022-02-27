@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react'
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Linking, SafeAreaView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import moment from 'moment';
 import Chart from '../components/Chart'
@@ -10,6 +10,7 @@ import {
 } from '@gorhom/bottom-sheet';
 import { WebView } from 'react-native-webview';
 import BottomSheet from 'reanimated-bottom-sheet';
+import ImagedCardView from "react-native-imaged-card-view";
 
 
 export default function DetailsScreen(props) {
@@ -87,12 +88,11 @@ export default function DetailsScreen(props) {
     }
 
     return (
-        <>
+        <SafeAreaView>
             <ScrollView
                 showsVerticalScrollIndicator={false}
                 showsHorizontalScrollIndicator={false}
             >
-
                 {
                     formattedData ?
                         (<Chart
@@ -136,7 +136,7 @@ export default function DetailsScreen(props) {
 
             </ScrollView>
 
-        </>
+        </SafeAreaView>
     );
 }
 
@@ -145,7 +145,8 @@ const styles = StyleSheet.create({
         height: StyleSheet.hairlineWidth,
         backgroundColor: '#A9ABB1',
         marginHorizontal: 16,
-        marginTop: 16,
+        marginVertical: 16,
+
     },
     image: {
         width: 40,
@@ -161,19 +162,22 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+        marginTop:8
     },
     upperTitles: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+
     },
     titlesWrapper: {
         marginHorizontal: 8,
         marginVertical: 8
     },
     title: {
-        marginRight: 20,
         fontSize: 18,
+        flex: 1,
+        flexWrap: 'wrap'
     },
     subtitle: {
         fontSize: 14,
