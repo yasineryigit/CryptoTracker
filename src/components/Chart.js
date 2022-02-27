@@ -39,7 +39,7 @@ const Chart = ({ currentPrice, logoUrl, name, symbol, priceChangePercentage7d, s
         return <Text>Loading...</Text>
     }
 
-    const points = monotoneCubicInterpolation({ data: sparkline, range: 40 });
+    const points = monotoneCubicInterpolation({ data: sparkline, range: sparkline.length });
 
     return (
         <ChartPathProvider data={{ points, smoothingStrategy: 'bezier' }}>
