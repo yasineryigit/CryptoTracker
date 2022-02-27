@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, FlatList, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, ScrollView, FlatList, StyleSheet, SafeAreaView, Modal } from 'react-native';
 import { getAllCoins } from '../api/apiCalls';
 import ListItem from '../components/ListItem';
 import {
@@ -12,12 +12,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import { useNavigation } from '@react-navigation/native';
+import ModalPicker from '../components/ModalPicker';
+
 
 
 export default function MarketScreen() {
 
     const [coinDatas, setCoinDatas] = useState([]);
-    const [openMenu, setOpenMenu] = useState(false);
+    const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedCoin, setSelectedCoin] = useState('')
     const [isRunning, setIsRunning] = useState(true);
     const funRef = useRef(null);
@@ -41,6 +43,24 @@ export default function MarketScreen() {
         }, [])
     );
 
+    const changeModalVisibility = (bool) => {
+        setIsModalVisible(bool)
+    }
+
+    const setData = (option, index) => {
+        console.log("Seçilen option & index :", option, index)
+        switch (index) {
+            case 0:
+                console.log("Kaydedilecek coin:", selectedCoin)
+                saveSelectedCoin()
+                break;
+            case 1:
+                break;
+            default:
+                break;
+        }
+    }
+
 
     useEffect(() => {
 
@@ -63,7 +83,7 @@ export default function MarketScreen() {
             const jsonValue = await AsyncStorage.getItem('favorites')
             if (jsonValue !== null) { //if saved value is not null then push into it
                 let value = JSON.parse(jsonValue)
-                found = value.find(x => x === selectedCoin.id) ? true : false
+                let found = value.find(x => x === selectedCoin.id) ? true : false
                 if (!found) {
                     value.push(selectedCoin.id)
                     console.log("kaydedilecek array:", value)
@@ -96,30 +116,12 @@ export default function MarketScreen() {
     return (
 
         <View style={styles.container}>
-            <Menu
-                opened={openMenu}
-            >
-                <MenuTrigger triggerOnLongPress={true} />
-                <MenuOptions >
-                    <MenuOption onSelect={() => {
-                        saveSelectedCoin()
-                        setOpenMenu(false)
-                    }
-                    } text='Add to favorites' />
-                    <MenuOption onSelect={() => {
-                        //go to details
-                        navigation.navigate("DetailsScreen", { selectedCoin })
-                        setOpenMenu(false)
-                    }
-                    } text='Show Details' />
-
-                    <MenuOption onSelect={() => setOpenMenu(false)} text='Cancel' />
-                </MenuOptions>
-            </Menu>
 
             <FlatList
                 keyExtractor={(item) => item.id}
                 data={coinDatas}
+                showsVerticalScrollIndicator={false}
+                showsHorizontalScrollIndicator={false}
                 renderItem={({ item }) => (
                     <ListItem
                         name={item.name}
@@ -128,13 +130,32 @@ export default function MarketScreen() {
                         price_change_percentage_24h={item.price_change_percentage_24h}
                         logoUrl={item.image}
                         onPress={() => {
-                            setOpenMenu(true)
+                            navigation.navigate("DetailsScreen", { selectedCoin: item })
+                        }}
+                        onLongPress={() => {
+                            changeModalVisibility(true)
                             setSelectedCoin(item)
                         }}
                     />
                 )}
                 ListHeaderComponent={<ListHeader />}
             />
+
+            <Modal
+                transparent={true}
+                animationType='fade'
+                visible={isModalVisible}
+                nRequestClose={() => changeModalVisibility(false)}
+            >
+                <ModalPicker
+                    changeModalVisibility={changeModalVisibility}
+                    options={['Add to favorites', 'Cancel']}
+                    setData={setData}
+
+                />
+
+            </Modal>
+
         </View>
 
     );

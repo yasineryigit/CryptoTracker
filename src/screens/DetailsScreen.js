@@ -88,7 +88,10 @@ export default function DetailsScreen(props) {
 
     return (
         <>
-            <ScrollView>
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                showsHorizontalScrollIndicator={false}
+            >
 
                 {
                     formattedData ?
@@ -107,7 +110,7 @@ export default function DetailsScreen(props) {
                         <TouchableOpacity key={news.url} onPress={() => {
                             console.log("clicked")
                             //openNewsInWebView(news.url)
-                            navigation.navigate("WebViewScreen", { selectedNewsUrl:news.url })
+                            navigation.navigate("WebViewScreen", { selectedNewsUrl: news.url })
                             //Linking.openURL(news.url).catch(err => console.error("Couldn't load page", err));
 
                         }}>

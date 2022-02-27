@@ -38,17 +38,17 @@ const MyStackNavigator = () => {
 export default function App() {
 
   return (
-    <>
-      <MenuProvider style={styles.container}>
-        <NavigationContainer>
+    <MenuProvider>
 
-          <MyStackNavigator />
+      <NavigationContainer>
 
-        </NavigationContainer>
+        <MyStackNavigator />
 
-      </MenuProvider>
+      </NavigationContainer>
+
+
       <Toast />
-    </>
+    </MenuProvider>
 
   );
 

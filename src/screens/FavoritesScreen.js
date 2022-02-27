@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Modal } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getAllCoins, getCoin } from '../api/apiCalls';
 import ListItem from '../components/ListItem';
@@ -12,6 +12,8 @@ import {
     MenuTrigger,
 } from 'react-native-popup-menu';
 import Toast from 'react-native-toast-message';
+import { useNavigation } from '@react-navigation/native';
+import ModalPicker from '../components/ModalPicker';
 
 export default function FavoritesScreen() {
 
@@ -22,8 +24,10 @@ export default function FavoritesScreen() {
     const [isRunning, setIsRunning] = useState(true);
     const funRef = useRef(null);
     const [openMenu, setOpenMenu] = useState(false);
-    const [selectedCoin, setSelectedCoin] = useState('')
+    const [selectedCoin, setSelectedCoin] = useState({})
     const [notifyEmptyList, setNotifyEmptyList] = useState(false);
+    const navigation = useNavigation();
+    const [isModalVisible, setIsModalVisible] = useState(false);
 
 
     useFocusEffect(
@@ -46,6 +50,25 @@ export default function FavoritesScreen() {
             };
         }, [])
     );
+
+    const changeModalVisibility = (bool) => {
+        setIsModalVisible(bool)
+    }
+
+    const setData = (option, index) => {
+        console.log("Seçilen option & index :", option, index)
+        switch (index) {
+            case 0:
+                console.log("Silinecek coin:", selectedCoin)
+                deleteFromFavorites()
+                break;
+            case 1:
+                break;
+            default:
+                break;
+        }
+    }
+
 
 
     useEffect(() => {
@@ -97,7 +120,7 @@ export default function FavoritesScreen() {
             if (savedFavorites != null && JSON.parse(savedFavorites).length !== 0) {
                 console.log("savedfavorites are exists")
                 JSON.parse(savedFavorites).forEach((item) => {
-                    body = {
+                    let body = {
                         id: item,
                     }
                     setFavoritedCoins(prevFavoritedCoins => [...prevFavoritedCoins, body]);//add favoriteObject with only id
@@ -119,10 +142,10 @@ export default function FavoritesScreen() {
             const jsonValue = await AsyncStorage.getItem('favorites')
             if (jsonValue !== null) { //if saved value is not null then push into it
                 var filteredFavoriteCoins = favoritedCoins.filter(function (value, index, arr) {
-                    return value.id !== selectedCoin;
+                    return value.id !== selectedCoin.id;
                 });
                 var filteredJsonValue = JSON.parse(jsonValue).filter(function (value, index, arr) {
-                    return value !== selectedCoin;
+                    return value !== selectedCoin.id;
                 });
                 //console.log("silindikten sonra filteredFavoriteCoins:", filteredFavoriteCoins);
                 if (filteredFavoriteCoins.length === 0) {//if there is no favorites, then notify user
@@ -130,7 +153,7 @@ export default function FavoritesScreen() {
                 }
                 setFavoritedCoins(filteredFavoriteCoins)//delete from state array
                 await AsyncStorage.setItem('favorites', JSON.stringify(filteredJsonValue))//delete from local storage
-                showToast('error', 'Successful', `${selectedCoin} has been removed from your favorites`)
+                showToast('error', 'Successful', `${selectedCoin.id} has been removed from your favorites`)
             }
         } catch (e) {
             console.log("error while async storage:", e)
@@ -183,6 +206,8 @@ export default function FavoritesScreen() {
                     renderList ? (<FlatList
                         keyExtractor={(item) => item.id}
                         data={favoritedCoins}
+                        showsVerticalScrollIndicator={false}
+                        showsHorizontalScrollIndicator={false}
                         renderItem={({ item }) => (
                             <ListItem
                                 name={item.name}
@@ -191,10 +216,12 @@ export default function FavoritesScreen() {
                                 price_change_percentage_24h={item.price_change_percentage_24h}
                                 logoUrl={item.image}
                                 onPress={() => {
-                                    setOpenMenu(true)
-                                    setSelectedCoin(item.id)
-                                }
-                                }
+                                    navigation.navigate("DetailsScreen", { selectedCoin: item })
+                                }}
+                                onLongPress={() => {
+                                    changeModalVisibility(true)
+                                    setSelectedCoin(item)
+                                }}
                             />
                         )}
 
@@ -220,25 +247,22 @@ export default function FavoritesScreen() {
 
             }
 
-            <Menu
-                opened={openMenu}
-                style={{
-                    justifyContent: 'center',
-                    alignItems: 'center'
-                }}
+            <Modal
+                transparent={true}
+                animationType='fade'
+                visible={isModalVisible}
+                nRequestClose={() => changeModalVisibility(false)}
             >
-                <MenuTrigger text='' />
-                <MenuOptions >
-                    <MenuOption onSelect={() => {
+                <ModalPicker
+                    changeModalVisibility={changeModalVisibility}
+                    options={['Remove from favorites', 'Cancel']}
+                    setData={setData}
 
-                        deleteFromFavorites()
-                        setOpenMenu(false)
-                    }
-                    } text='Remove from favorites' />
+                />
 
-                    <MenuOption onSelect={() => setOpenMenu(false)} text='Cancel' />
-                </MenuOptions>
-            </Menu>
+            </Modal>
+
+
         </View>
 
     );
