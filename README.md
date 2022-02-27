@@ -19,9 +19,11 @@ react-native run-ios
 ```
 
 ## Screenshoot
-![Screenshoot](https://www.hizliresim.com/o9g6g4g)
-![Screenshoot](https://www.hizliresim.com/bm68eoy)
-![Screenshoot](https://www.hizliresim.com/ofzd3r4)
+
+<img src="https://github.com/yasineryigit/CryptoTracker/blob/master/screenshoots/1.png" width="200" height="400" />
+<img src="https://github.com/yasineryigit/CryptoTracker/blob/master/screenshoots/1.png" width="200" height="400" />
+<img src="https://github.com/yasineryigit/CryptoTracker/blob/master/screenshoots/1.png" width="200" height="400" />
+
 
 
 ## Contributing
