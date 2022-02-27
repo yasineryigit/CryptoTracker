@@ -88,9 +88,9 @@ export default function MarketScreen() {
                     value.push(selectedCoin.id)
                     console.log("kaydedilecek array:", value)
                     await AsyncStorage.setItem('favorites', JSON.stringify(value))
-                    showToast('success', 'Successful', `${selectedCoin.id} added to your favorites successfully`)
+                    showToast('success', 'Successful', `${selectedCoin.name} added to your favorites successfully`)
                 } else {
-                    showToast('info', 'Has been already added', `${selectedCoin.id} has already been added to your favorites`)
+                    showToast('info', 'Has been already added', `${selectedCoin.name} has already been added to your favorites`)
                 }
 
             } else {//if saved value is null then push array
@@ -98,7 +98,7 @@ export default function MarketScreen() {
                 favorites.push(selectedCoin.id)
                 console.log("kaydedilecek array:", favorites)
                 await AsyncStorage.setItem('favorites', JSON.stringify(favorites))
-                showToast('success', 'Successful', `${selectedCoin.id} added to your favorites successfully`)
+                showToast('success', 'Successful', `${selectedCoin.name} added to your favorites successfully`)
             }
 
         } catch (e) {

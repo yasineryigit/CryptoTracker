@@ -17,7 +17,7 @@ import ModalPicker from '../components/ModalPicker';
 
 export default function FavoritesScreen() {
 
-    const [savedFavorites, setSavedFavorites] = useState([])//@REMOVABLE
+    const [savedFavorites, setSavedFavorites] = useState([])
     const [allCoins, setAllCoins] = useState([])
     const [favoritedCoins, setFavoritedCoins] = useState([])
     const [renderList, setRenderList] = useState(false)
@@ -42,9 +42,7 @@ export default function FavoritesScreen() {
             }
             return () => {
                 console.log("favoritesscreen unfocused")
-                setFavoritedCoins([])
                 setSavedFavorites([])
-                setRenderList(false)
                 setNotifyEmptyList(false);
                 clearInterval(funRef.current); // Stop the interval.
             };
@@ -90,9 +88,13 @@ export default function FavoritesScreen() {
 
 
     useEffect(() => {//add datas of favorited coins
+        var list = []
+        var isSync = false
         allCoins.forEach((coin, coinIndex) => {
             favoritedCoins.forEach((favoritedCoin, favoritedCoinIndex) => {
-                if (coin.id === favoritedCoin.id) {
+                if (coin.id === favoritedCoin.id && savedFavorites.length === favoritedCoins.length) {//if allcoins are already setted into favoritedCoins in state
+                    isSync = true
+                    console.log("im updating")
                     setFavoritedCoins(favoritedCoins => {
                         let newArr = [...favoritedCoins]; // copying the old datas array
                         newArr[favoritedCoinIndex] = allCoins[coinIndex]; // replace e.target.value with whatever you want to change it to
@@ -100,8 +102,16 @@ export default function FavoritesScreen() {
                     })
                 }
             })
+            if (!isSync && savedFavorites.find(savedFavorite => savedFavorite === coin.id) ? true : false) {//if allcoins are not setted into favoritedCoins, push them into array and set it 
+                console.log("im adding")
+                list.push(coin)
+            }
         })
-    }, [allCoins])
+        if (list.length > 0) {//if there is data in list, set it to favoritedCoins 
+            setFavoritedCoins(list)
+        }
+
+    }, [allCoins, savedFavorites])
 
 
     const fetchAllCoins = () => {
@@ -117,15 +127,9 @@ export default function FavoritesScreen() {
         try {
             var savedFavorites = await AsyncStorage.getItem('favorites')
             console.log("eldeki savedFavorites object:", savedFavorites)
-            if (savedFavorites != null && JSON.parse(savedFavorites).length !== 0) {
+            if (savedFavorites !== null && JSON.parse(savedFavorites).length !== 0) {
                 console.log("savedfavorites are exists")
-                JSON.parse(savedFavorites).forEach((item) => {
-                    let body = {
-                        id: item,
-                    }
-                    setFavoritedCoins(prevFavoritedCoins => [...prevFavoritedCoins, body]);//add favoriteObject with only id
-                })
-                setSavedFavorites(JSON.parse(savedFavorites))//@REMOVABLE
+                setSavedFavorites(JSON.parse(savedFavorites))
             } else {
                 console.log("savedFavorites is empty")
                 setNotifyEmptyList(true)
@@ -152,8 +156,9 @@ export default function FavoritesScreen() {
                     setNotifyEmptyList(true)
                 }
                 setFavoritedCoins(filteredFavoriteCoins)//delete from state array
+                setSavedFavorites(filteredJsonValue)
                 await AsyncStorage.setItem('favorites', JSON.stringify(filteredJsonValue))//delete from local storage
-                showToast('error', 'Successful', `${selectedCoin.id} has been removed from your favorites`)
+                showToast('error', 'Successful', `${selectedCoin.name} has been removed from your favorites`)
             }
         } catch (e) {
             console.log("error while async storage:", e)
@@ -177,7 +182,7 @@ export default function FavoritesScreen() {
 
     return (
 
-        <View style={styles.container}>
+        <View style={styles.container} >
             <ListHeader />
             {
 
