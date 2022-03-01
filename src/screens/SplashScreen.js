@@ -2,14 +2,14 @@ import React, { useEffect } from 'react';
 import { View, Text } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { useNavigation } from '@react-navigation/native';
-import { auth } from '../../firebase'
+import auth from '@react-native-firebase/auth';
 
 export default function SplashScreen() {
 
     const navigation = useNavigation();
 
     useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged(user => {
+        const unsubscribe = auth().onAuthStateChanged(user => {
             if (user) {
                 navigation.replace("MyTabs")
                 console.log(`User logged in successfully ${user.email}`)

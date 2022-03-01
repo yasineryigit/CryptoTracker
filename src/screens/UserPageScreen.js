@@ -7,14 +7,14 @@ import Paragraph from '../components/Paragraph'
 import Background from '../components/Background'
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
-import { auth } from '../../firebase';
+import auth from '@react-native-firebase/auth';
 
 export default function UserPageScreen() {
 
     const navigation = useNavigation();
 
     const onClickLogout = async () => {
-        auth.signOut()
+        auth().signOut()
             .then(() => {
                 navigation.replace("StartScreen")
             }).catch((err) => {
@@ -25,7 +25,7 @@ export default function UserPageScreen() {
     return (
         <Background>
             <Logo />
-            <Header>{auth.currentUser?.email}</Header>
+            <Header>{auth().currentUser?.email}</Header>
 
 
             <Button

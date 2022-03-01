@@ -8,7 +8,7 @@ import Button from '../components/Button'
 import TextInput from '../components/TextInput'
 import BackButton from '../components/BackButton'
 import { theme } from '../core/theme'
-import { auth } from '../../firebase'
+import auth from '@react-native-firebase/auth';
 
 
 export default function RegisterScreen({ navigation }) {
@@ -20,7 +20,7 @@ export default function RegisterScreen({ navigation }) {
 
   const onSignUpPressed = () => {
 
-    auth.createUserWithEmailAndPassword(userEmail, userPassword)
+    auth().createUserWithEmailAndPassword(userEmail, userPassword)
       .then(userCredentials => {
         const user = userCredentials.user
         navigation.replace("MyTabs")

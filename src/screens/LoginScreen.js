@@ -8,7 +8,7 @@ import Button from '../components/Button'
 import TextInput from '../components/TextInput'
 import BackButton from '../components/BackButton'
 import { theme } from '../core/theme'
-import { auth } from '../../firebase'
+import auth from '@react-native-firebase/auth';
 
 
 
@@ -18,7 +18,7 @@ export default function LoginScreen({ navigation }) {
 
   const onLoginPressed = () => {
 
-    auth.signInWithEmailAndPassword(userEmail, userPassword)
+    auth().signInWithEmailAndPassword(userEmail, userPassword)
       .then(userCredentials => {
         const user = userCredentials.user
         navigation.replace("MyTabs")

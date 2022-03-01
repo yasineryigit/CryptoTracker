@@ -5,13 +5,12 @@ import Header from '../components/Header'
 import Button from '../components/Button'
 import Paragraph from '../components/Paragraph'
 import { useState, useEffect } from 'react'
-import { auth } from '../../firebase'
+import auth from '@react-native-firebase/auth';
 import { useNavigation } from '@react-navigation/native';
 
 
 const StartScreen = ({ navigation }) => {
 
- 
 
   return (
     <Background>
