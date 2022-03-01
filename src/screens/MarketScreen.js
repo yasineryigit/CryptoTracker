@@ -15,7 +15,6 @@ import { useNavigation } from '@react-navigation/native';
 import ModalPicker from '../components/ModalPicker';
 
 
-
 export default function MarketScreen() {
 
     const [coinDatas, setCoinDatas] = useState([]);

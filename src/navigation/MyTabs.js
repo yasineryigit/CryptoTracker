@@ -6,6 +6,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import Icon from 'react-native-vector-icons/FontAwesome';
 import MarketScreen from '../screens/MarketScreen';
 import FavoritesScreen from '../screens/FavoritesScreen';
+import UserPageScreen from '../screens/UserPageScreen';
 
 
 const Tab = createBottomTabNavigator();
@@ -54,6 +55,17 @@ const MyTabs = () => {
                     tabBarLabel: 'Favorites',
                     tabBarIcon: ({ color }) => (
                         <Icon name="heart" color={color} size={26} />
+                    ),
+                }}
+            />
+
+            <Tab.Screen
+                name="UserPageScreen"
+                component={UserPageScreen}
+                options={{
+                    tabBarLabel: 'Favorites',
+                    tabBarIcon: ({ color }) => (
+                        <Icon name="user" color={color} size={26} />
                     ),
                 }}
             />
