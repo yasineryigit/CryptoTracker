@@ -18,8 +18,6 @@ import auth from '@react-native-firebase/auth';
 import uuid from 'react-native-uuid';
 import { addToFavorites } from '../db/FavoriteManager';
 
-
-
 export default function MarketScreen() {
 
     const [allCoins, setAllCoins] = useState([]);
@@ -101,7 +99,7 @@ export default function MarketScreen() {
                         price_change_percentage_24h={item.price_change_percentage_24h}
                         logoUrl={item.image}
                         onPress={() => {
-                            navigation.navigate("DetailsScreen", { selectedCoin: item })
+                            navigation.navigate("MyTopTabs", { selectedCoin: item })
                         }}
                         onLongPress={() => {
                             changeModalVisibility(true)

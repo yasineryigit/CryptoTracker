@@ -33,17 +33,6 @@ export default function DetailsScreen(props) {
     }, [news])
 
 
-    const renderContent = () => (
-        <View
-            style={{
-                backgroundColor: 'white',
-                padding: 16,
-                height: 450,
-            }}
-        >
-            <Text>Swipe down to close</Text>
-        </View>
-    );
 
     const formatSparkline = (numbers) => {
         const sevenDaysAgo = moment().subtract(7, 'days').unix();
@@ -89,9 +78,11 @@ export default function DetailsScreen(props) {
                         />) : null
                 }
                 <View style={styles.divider} />
-                {
-                    news ? <News news={news} /> : null
-                }
+
+
+                <View style={styles.titleWrapper}>
+                    <Text style={styles.largeTitle}>Comments</Text>
+                </View>
 
 
             </ScrollView>
@@ -152,5 +143,13 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 4,
         elevation: 5,
+    },
+    titleWrapper: {
+        marginTop: 20,
+        paddingHorizontal: 16,
+    },
+    largeTitle: {
+        fontSize: 24,
+        fontWeight: "bold",
     },
 })

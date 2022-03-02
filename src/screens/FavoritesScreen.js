@@ -5,12 +5,6 @@ import { getAllCoins, getCoin } from '../api/apiCalls';
 import ListItem from '../components/ListItem';
 import { useFocusEffect } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
-import {
-    Menu,
-    MenuOptions,
-    MenuOption,
-    MenuTrigger,
-} from 'react-native-popup-menu';
 import Toast from 'react-native-toast-message';
 import { useNavigation } from '@react-navigation/native';
 import ModalPicker from '../components/ModalPicker';
@@ -148,9 +142,7 @@ export default function FavoritesScreen() {
                     setNotifyEmptyList(true)
                 }
             })
-
         return () => subscriber();
-
     }
 
     const ListHeader = () => (
@@ -187,9 +179,7 @@ export default function FavoritesScreen() {
                             }}
                         />
                     </View>
-
                     :
-
                     renderList ? (<FlatList
                         keyExtractor={(item) => item.id}
                         data={favoritedCoinDatas}
@@ -203,7 +193,7 @@ export default function FavoritesScreen() {
                                 price_change_percentage_24h={item.price_change_percentage_24h}
                                 logoUrl={item.image}
                                 onPress={() => {
-                                    navigation.navigate("DetailsScreen", { selectedCoin: item })
+                                    navigation.navigate("MyTopTabs", { selectedCoin: item })
                                 }}
                                 onLongPress={() => {
                                     changeModalVisibility(true)
