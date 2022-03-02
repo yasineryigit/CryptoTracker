@@ -62,7 +62,7 @@ export default function FavoritesScreen() {
         switch (index) {
             case 0:
                 console.log("Silinecek coin:", selectedCoin)
-                deleteFromFavorites()
+                removeFromFavorites(selectedCoin)
                 break;
             case 1:
                 break;
@@ -70,7 +70,6 @@ export default function FavoritesScreen() {
                 break;
         }
     }
-
 
 
     useEffect(() => {
@@ -135,13 +134,11 @@ export default function FavoritesScreen() {
             .collection('favorites')
             .onSnapshot(documentSnapshot => {
                 const ids = []
-                console.log("gelen documentSnapshot", documentSnapshot)
                 documentSnapshot.forEach(documentSnapshot => {
                     console.log("favorited coin from firestore", documentSnapshot._data.id);
                     ids.push(documentSnapshot._data.id)
                 });
 
-                console.log("eklenen ids: ", ids)
                 if (ids.length !== 0) {
                     console.log("favoritedCoinIds are exists")
                     setFavoritedCoinIds(ids)
@@ -153,17 +150,6 @@ export default function FavoritesScreen() {
 
         return () => subscriber();
 
-    }
-
-
-    const deleteFromFavorites = async () => {
-        removeFromFavorites(selectedCoin)//removes favorite from asyncstorage &
-    }
-
-    const showToast = (type, text1, text2) => {
-        Toast.show({
-            type, text1, text2
-        });
     }
 
     const ListHeader = () => (

@@ -6,24 +6,39 @@ import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import uuid from 'react-native-uuid';
 
-export const getFavoritesFromFirestore = () => {
-
-}
-
 
 export const addToFavorites = async (selectedCoin) => {
     //daha önce eklenmemişse firebase'e at
-    const id = selectedCoin.id
-    firestore().collection('users')
+
+    firestore()
+        .collection('users')
         .doc(`user-${auth().currentUser?.uid}`)
-        .collection('favorites')
-        .doc(id)
-        .set({
-            id
-        }).then(() => {
-            console.log(id, " added")
+        .collection('favorites').get().then((response) => {
+            let found = false;
+
+            response.docs.forEach((doc) => {
+                if (doc._data.id === selectedCoin.id) {
+                    found = true;
+                }
+            })
+
+            if (!found) {
+                const id = selectedCoin.id
+                firestore().collection('users')
+                    .doc(`user-${auth().currentUser?.uid}`)
+                    .collection('favorites')
+                    .doc(id)
+                    .set({
+                        id
+                    }).then(() => {
+                        console.log(id, " added")
+                    })
+                showToast('success', 'Successful', `${selectedCoin.name} added to your favorites successfully`)
+            } else {
+                showToast('success', 'Has been already added', `${selectedCoin.name} has been already added to your favorites successfully`)
+
+            }
         })
-    showToast('success', 'Successful', `${selectedCoin.name} added to your favorites successfully`)
 }
 
 export const removeFromFavorites = async (selectedCoin) => {
@@ -37,8 +52,6 @@ export const removeFromFavorites = async (selectedCoin) => {
         })
     showToast('error', 'Successful', `${selectedCoin.name} has been removed from your favorites`)
 }
-
-
 
 
 const showToast = (type, text1, text2) => {
