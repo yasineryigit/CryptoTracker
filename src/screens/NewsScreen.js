@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView , StyleSheet} from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { getNewsByName } from '../api/apiCalls';
 import News from '../components/News';
 
@@ -23,7 +23,6 @@ export default function NewsScreen() {
                 <View style={styles.titleWrapper}>
                     <Text style={styles.largeTitle}>News</Text>
                 </View>
-                <View style={styles.divider} />
             </>
             <News news={news} />
         </ScrollView>

@@ -46,8 +46,6 @@ export default function FavoritesScreen() {
             }
             return () => {
                 console.log("favoritesscreen unfocused")
-                setFavoritedCoinIds([])
-                setNotifyEmptyList(false);
                 clearInterval(funRef.current); // Stop the interval.
             };
         }, [])
@@ -105,6 +103,7 @@ export default function FavoritesScreen() {
                     })
                 }
             })
+
             if (!isSync && favoritedCoinIds.find(favoritedCoinId => favoritedCoinId === coin.id) ? true : false) {//if allcoins are not setted into favoritedCoinDatas, push them into array and set it 
                 console.log("im adding")
                 list.push(coin)
@@ -134,14 +133,16 @@ export default function FavoritesScreen() {
             .collection('favorites')
             .onSnapshot(documentSnapshot => {
                 const ids = []
+                console.log("favorites documentSnapshot", documentSnapshot)
                 documentSnapshot.forEach(documentSnapshot => {
-                    console.log("favorited coin from firestore", documentSnapshot._data.id);
+                    //console.log("favorited coin from firestore", documentSnapshot._data.id);
                     ids.push(documentSnapshot._data.id)
                 });
 
                 if (ids.length !== 0) {
                     console.log("favoritedCoinIds are exists")
                     setFavoritedCoinIds(ids)
+                    setNotifyEmptyList(false)
                 } else {
                     console.log("favoritedCoinIds is empty")
                     setNotifyEmptyList(true)
