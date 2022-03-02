@@ -16,13 +16,15 @@ import ModalPicker from '../components/ModalPicker';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import uuid from 'react-native-uuid';
+import { addToFavorites } from '../db/FavoriteManager';
+
 
 
 export default function MarketScreen() {
 
     const [allCoins, setAllCoins] = useState([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [selectedCoin, setSelectedCoin] = useState('')
+    const [selectedCoin, setSelectedCoin] = useState({})
     const [isRunning, setIsRunning] = useState(true);
     const funRef = useRef(null);
     const navigation = useNavigation();
@@ -49,12 +51,12 @@ export default function MarketScreen() {
         setIsModalVisible(bool)
     }
 
-    const setData = (option, index) => {
+    const setData = async (option, index) => {
         console.log("Seçilen option & index :", option, index)
         switch (index) {
             case 0:
                 console.log("Kaydedilecek coin:", selectedCoin)
-                saveSelectedCoin()
+                addToFavorites(selectedCoin)
                 break;
             case 1:
                 break;
@@ -79,51 +81,8 @@ export default function MarketScreen() {
         </>
     )
 
-    const saveSelectedCoin = async () => {
-        let favoritedCoinIds = [];
-        try {
-            const jsonValue = await AsyncStorage.getItem('favorites')
-            if (jsonValue !== null) { //if saved value is not null then push into it
-                favoritedCoinIds = JSON.parse(jsonValue)
-                let found = favoritedCoinIds.find(x => x === selectedCoin.id) ? true : false
-                if (!found) {
-                    favoritedCoinIds.push(selectedCoin.id)
-                } else {
-                    showToast('info', 'Has been already added', `${selectedCoin.name} has already been added to your favorites`)
-                }
-
-            } else {//if saved value is null then push array
-                favoritedCoinIds.push(selectedCoin.id)
-
-            }
-            console.log("kaydedilecek array:", favoritedCoinIds)
-            await AsyncStorage.setItem('favorites', JSON.stringify(favoritedCoinIds))
-            saveFavoritedCoinIdToFirebase(selectedCoin.id)
-            showToast('success', 'Successful', `${selectedCoin.name} added to your favorites successfully`)
-
-        } catch (e) {
-            console.log("error while async storage:", e)
-        }
-    }
-
-    const saveFavoritedCoinIdToFirebase = (id) => {
-        const favoritedKey = `favorite-${uuid.v4()}`
-        firestore().collection('users')
-            .doc(`user-${auth().currentUser?.uid}`)
-            .collection('favorites')
-            .add({
-                id
-            }).then(() => {
-                console.log(id, " added")
-            })
-    }
 
 
-    const showToast = (type, text1, text2) => {
-        Toast.show({
-            type, text1, text2
-        });
-    }
 
     return (
 

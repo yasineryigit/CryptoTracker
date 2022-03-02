@@ -14,6 +14,10 @@ import {
 import Toast from 'react-native-toast-message';
 import { useNavigation } from '@react-navigation/native';
 import ModalPicker from '../components/ModalPicker';
+import { removeFromFavorites } from '../db/FavoriteManager';
+import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
+import uuid from 'react-native-uuid';
 
 export default function FavoritesScreen() {
 
@@ -123,46 +127,37 @@ export default function FavoritesScreen() {
     }
 
     const getFavorites = async () => {
+        //firebase'den güncel takip listesini çek ve state'e at
 
-        try {
-            var favoritedCoinIds = await AsyncStorage.getItem('favorites')
-            console.log("eldeki favoritedCoinIds object:", favoritedCoinIds)
-            if (favoritedCoinIds !== null && JSON.parse(favoritedCoinIds).length !== 0) {
-                console.log("favoritedCoinIds are exists")
-                setFavoritedCoinIds(JSON.parse(favoritedCoinIds))
-            } else {
-                console.log("favoritedCoinIds is empty")
-                setNotifyEmptyList(true)
-            }
-        } catch (e) {
-            console.log("error:", e)
-        }
+        const subscriber = firestore()
+            .collection('users')
+            .doc(`user-${auth().currentUser?.uid}`)
+            .collection('favorites')
+            .onSnapshot(documentSnapshot => {
+                const ids = []
+                console.log("gelen documentSnapshot", documentSnapshot)
+                documentSnapshot.forEach(documentSnapshot => {
+                    console.log("favorited coin from firestore", documentSnapshot._data.id);
+                    ids.push(documentSnapshot._data.id)
+                });
+
+                console.log("eklenen ids: ", ids)
+                if (ids.length !== 0) {
+                    console.log("favoritedCoinIds are exists")
+                    setFavoritedCoinIds(ids)
+                } else {
+                    console.log("favoritedCoinIds is empty")
+                    setNotifyEmptyList(true)
+                }
+            })
+
+        return () => subscriber();
+
     }
 
 
     const deleteFromFavorites = async () => {
-
-        try {
-            const jsonValue = await AsyncStorage.getItem('favorites')
-            if (jsonValue !== null) { //if saved value is not null then push into it
-                var filteredFavoritedCoinDatas = favoritedCoinDatas.filter(function (value, index, arr) {
-                    return value.id !== selectedCoin.id;
-                });
-                var filteredJsonValue = JSON.parse(jsonValue).filter(function (value, index, arr) {
-                    return value !== selectedCoin.id;
-                });
-                //console.log("silindikten sonra filteredFavoriteCoins:", filteredFavoriteCoins);
-                if (filteredFavoritedCoinDatas.length === 0) {//if there is no favorites, then notify user
-                    setNotifyEmptyList(true)
-                }
-                setFavoritedCoinDatas(filteredFavoritedCoinDatas)//delete from state array
-                setFavoritedCoinIds(filteredJsonValue)
-                await AsyncStorage.setItem('favorites', JSON.stringify(filteredJsonValue))//delete from local storage
-                showToast('error', 'Successful', `${selectedCoin.name} has been removed from your favorites`)
-            }
-        } catch (e) {
-            console.log("error while async storage:", e)
-        }
+        removeFromFavorites(selectedCoin)//removes favorite from asyncstorage &
     }
 
     const showToast = (type, text1, text2) => {
