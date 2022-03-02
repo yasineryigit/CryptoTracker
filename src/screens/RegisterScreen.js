@@ -16,7 +16,7 @@ export default function RegisterScreen({ navigation }) {
   const [userLastName, setUserLastName] = useState()
   const [userEmail, setUserEmail] = useState()
   const [userPassword, setUserPassword] = useState()
-
+  
 
   const onSignUpPressed = () => {
 

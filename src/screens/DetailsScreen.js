@@ -1,16 +1,10 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Linking, SafeAreaView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import moment from 'moment';
 import Chart from '../components/Chart'
 import { getNewsByName } from '../api/apiCalls';
-import {
-    BottomSheetModal,
-    BottomSheetModalProvider,
-} from '@gorhom/bottom-sheet';
-import { WebView } from 'react-native-webview';
-import BottomSheet from 'reanimated-bottom-sheet';
-import ImagedCardView from "react-native-imaged-card-view";
+import News from '../components/News';
+import moment from 'moment';
 
 
 export default function DetailsScreen(props) {
@@ -19,11 +13,7 @@ export default function DetailsScreen(props) {
     const selectedCoin = props.route.params.selectedCoin;
     const [formattedData, setFormattedData] = useState(null)
     const [news, setNews] = useState([])
-    const [selectedNewsUrl, setSelectedNewsUrl] = useState()
 
-    // bottom sheet variables
-    const snapPoints = useMemo(() => ['90%'], []);
-    const sheetRef = useRef(null);
 
     useEffect(() => {
         console.log("formatlanacak selectedCoin:", selectedCoin);
@@ -41,12 +31,6 @@ export default function DetailsScreen(props) {
     useEffect(() => {
         console.log("gelen news:", news)
     }, [news])
-
-
-    const openNewsInWebView = (url) => {
-        setSelectedNewsUrl(url)
-        sheetRef.current.snapTo(0)
-    }
 
 
     const renderContent = () => (
@@ -106,31 +90,7 @@ export default function DetailsScreen(props) {
                 }
                 <View style={styles.divider} />
                 {
-                    news.map((news) => (
-                        <TouchableOpacity key={news.url} onPress={() => {
-                            console.log("clicked")
-                            //openNewsInWebView(news.url)
-                            navigation.navigate("WebViewScreen", { selectedNewsUrl: news.url })
-                            //Linking.openURL(news.url).catch(err => console.error("Couldn't load page", err));
-
-                        }}>
-                            <View style={styles.divider} />
-                            <View style={styles.titlesWrapper}>
-                                <View style={styles.upperTitles}>
-                                    <View style={styles.upperLeftTitle}>
-                                        <Image source={{ uri: news.urlToImage }} style={styles.image} />
-                                        <Text style={styles.title}>{news.title}</Text>
-                                    </View>
-                                </View>
-                                <View style={styles.lowerTitles}>
-                                    <Text style={styles.subtitle}>{news.content.slice(0, 200).concat('...')}</Text>
-                                </View>
-                                <Text style={{ marginTop: 8 }}> {moment(news.publishedAt).fromNow()}</Text>
-                            </View>
-
-
-                        </TouchableOpacity>
-                    ))
+                    news ? <News news={news} /> : null
                 }
 
 
@@ -162,7 +122,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginTop:8
+        marginTop: 8
     },
     upperTitles: {
         flexDirection: 'row',

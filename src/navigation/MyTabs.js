@@ -3,10 +3,11 @@ import { View } from 'react-native';
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 import MarketScreen from '../screens/MarketScreen';
 import FavoritesScreen from '../screens/FavoritesScreen';
 import UserPageScreen from '../screens/UserPageScreen';
+import NewsScreen from '../screens/NewsScreen';
 
 
 const Tab = createBottomTabNavigator();
@@ -45,6 +46,16 @@ const MyTabs = () => {
                     tabBarLabel: 'Market',
                     tabBarIcon: ({ color }) => (
                         <Icon name="home" color={color} size={26} />
+                    ),
+                }}
+            />
+            <Tab.Screen
+                name="NewsScreen"
+                component={NewsScreen}
+                options={{
+                    tabBarLabel: 'Favorites',
+                    tabBarIcon: ({ color }) => (
+                        <Icon name="newspaper" color={color} size={26} />
                     ),
                 }}
             />

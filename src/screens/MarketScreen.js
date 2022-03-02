@@ -13,11 +13,14 @@ import { useFocusEffect } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import { useNavigation } from '@react-navigation/native';
 import ModalPicker from '../components/ModalPicker';
+import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
+import uuid from 'react-native-uuid';
 
 
 export default function MarketScreen() {
 
-    const [coinDatas, setCoinDatas] = useState([]);
+    const [allCoins, setAllCoins] = useState([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedCoin, setSelectedCoin] = useState('')
     const [isRunning, setIsRunning] = useState(true);
@@ -30,7 +33,7 @@ export default function MarketScreen() {
             if (isRunning) {
                 funRef.current = setInterval(() => { // Save reference to interval.
                     getAllCoins().then((response) => {
-                        setCoinDatas(response.data)
+                        setAllCoins(response.data)
                         console.log("marketscreen interval working")
                     }).catch((error) => {
                     })
@@ -63,9 +66,9 @@ export default function MarketScreen() {
 
     useEffect(() => {
 
-        //console.log("coinDatas:", coinDatas)
+        //console.log("allCoins:", allCoins)
 
-    }, [coinDatas])
+    }, [allCoins])
 
     const ListHeader = () => (
         <>
@@ -77,32 +80,42 @@ export default function MarketScreen() {
     )
 
     const saveSelectedCoin = async () => {
-
+        let favoritedCoinIds = [];
         try {
             const jsonValue = await AsyncStorage.getItem('favorites')
             if (jsonValue !== null) { //if saved value is not null then push into it
-                let value = JSON.parse(jsonValue)
-                let found = value.find(x => x === selectedCoin.id) ? true : false
+                favoritedCoinIds = JSON.parse(jsonValue)
+                let found = favoritedCoinIds.find(x => x === selectedCoin.id) ? true : false
                 if (!found) {
-                    value.push(selectedCoin.id)
-                    console.log("kaydedilecek array:", value)
-                    await AsyncStorage.setItem('favorites', JSON.stringify(value))
-                    showToast('success', 'Successful', `${selectedCoin.name} added to your favorites successfully`)
+                    favoritedCoinIds.push(selectedCoin.id)
                 } else {
                     showToast('info', 'Has been already added', `${selectedCoin.name} has already been added to your favorites`)
                 }
 
             } else {//if saved value is null then push array
-                let favorites = [];
-                favorites.push(selectedCoin.id)
-                console.log("kaydedilecek array:", favorites)
-                await AsyncStorage.setItem('favorites', JSON.stringify(favorites))
-                showToast('success', 'Successful', `${selectedCoin.name} added to your favorites successfully`)
+                favoritedCoinIds.push(selectedCoin.id)
+
             }
+            console.log("kaydedilecek array:", favoritedCoinIds)
+            await AsyncStorage.setItem('favorites', JSON.stringify(favoritedCoinIds))
+            saveFavoritedCoinIdToFirebase(selectedCoin.id)
+            showToast('success', 'Successful', `${selectedCoin.name} added to your favorites successfully`)
 
         } catch (e) {
             console.log("error while async storage:", e)
         }
+    }
+
+    const saveFavoritedCoinIdToFirebase = (id) => {
+        const favoritedKey = `favorite-${uuid.v4()}`
+        firestore().collection('users')
+            .doc(`user-${auth().currentUser?.uid}`)
+            .collection('favorites')
+            .add({
+                id
+            }).then(() => {
+                console.log(id, " added")
+            })
     }
 
 
@@ -118,7 +131,7 @@ export default function MarketScreen() {
 
             <FlatList
                 keyExtractor={(item) => item.id}
-                data={coinDatas}
+                data={allCoins}
                 showsVerticalScrollIndicator={false}
                 showsHorizontalScrollIndicator={false}
                 renderItem={({ item }) => (

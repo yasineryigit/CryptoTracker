@@ -17,9 +17,9 @@ import ModalPicker from '../components/ModalPicker';
 
 export default function FavoritesScreen() {
 
-    const [savedFavorites, setSavedFavorites] = useState([])
+    const [favoritedCoinIds, setFavoritedCoinIds] = useState([])
     const [allCoins, setAllCoins] = useState([])
-    const [favoritedCoins, setFavoritedCoins] = useState([])
+    const [favoritedCoinDatas, setFavoritedCoinDatas] = useState([])
     const [renderList, setRenderList] = useState(false)
     const [isRunning, setIsRunning] = useState(true);
     const funRef = useRef(null);
@@ -42,7 +42,7 @@ export default function FavoritesScreen() {
             }
             return () => {
                 console.log("favoritesscreen unfocused")
-                setSavedFavorites([])
+                setFavoritedCoinIds([])
                 setNotifyEmptyList(false);
                 clearInterval(funRef.current); // Stop the interval.
             };
@@ -70,11 +70,11 @@ export default function FavoritesScreen() {
 
 
     useEffect(() => {
-        console.log("favoritedCoins:", favoritedCoins)
+        console.log("favoritedCoinDatas:", favoritedCoinDatas)
 
-        if (favoritedCoins.length > 0) {
+        if (favoritedCoinDatas.length > 0) {
             let render = true
-            favoritedCoins.forEach((favoritedCoin) => {
+            favoritedCoinDatas.forEach((favoritedCoin) => {
                 console.log("data type: ", typeof favoritedCoin.current_price)
                 if (typeof favoritedCoin.current_price === 'undefined') {
                     console.log("undefined var")
@@ -84,34 +84,34 @@ export default function FavoritesScreen() {
             setRenderList(render)
             console.log("render: ", render)
         }
-    }, [favoritedCoins])
+    }, [favoritedCoinDatas])
 
 
     useEffect(() => {//add datas of favorited coins
         var list = []
         var isSync = false
         allCoins.forEach((coin, coinIndex) => {
-            favoritedCoins.forEach((favoritedCoin, favoritedCoinIndex) => {
-                if (coin.id === favoritedCoin.id && savedFavorites.length === favoritedCoins.length) {//if allcoins are already setted into favoritedCoins in state
+            favoritedCoinDatas.forEach((favoritedCoinData, favoritedCoinDataIndex) => {
+                if (coin.id === favoritedCoinData.id && favoritedCoinIds.length === favoritedCoinDatas.length) {//if allcoins are already setted into favoritedCoinDatas in state
                     isSync = true
                     console.log("im updating")
-                    setFavoritedCoins(favoritedCoins => {
-                        let newArr = [...favoritedCoins]; // copying the old datas array
-                        newArr[favoritedCoinIndex] = allCoins[coinIndex]; // replace e.target.value with whatever you want to change it to
+                    setFavoritedCoinDatas(favoritedCoinDatas => {
+                        let newArr = [...favoritedCoinDatas]; // copying the old datas array
+                        newArr[favoritedCoinDataIndex] = allCoins[coinIndex]; // replace e.target.value with whatever you want to change it to
                         return newArr
                     })
                 }
             })
-            if (!isSync && savedFavorites.find(savedFavorite => savedFavorite === coin.id) ? true : false) {//if allcoins are not setted into favoritedCoins, push them into array and set it 
+            if (!isSync && favoritedCoinIds.find(favoritedCoinId => favoritedCoinId === coin.id) ? true : false) {//if allcoins are not setted into favoritedCoinDatas, push them into array and set it 
                 console.log("im adding")
                 list.push(coin)
             }
         })
-        if (list.length > 0) {//if there is data in list, set it to favoritedCoins 
-            setFavoritedCoins(list)
+        if (list.length > 0) {//if there is data in list, set it to favoritedCoinDatas 
+            setFavoritedCoinDatas(list)
         }
 
-    }, [allCoins, savedFavorites])
+    }, [allCoins, favoritedCoinIds])
 
 
     const fetchAllCoins = () => {
@@ -125,13 +125,13 @@ export default function FavoritesScreen() {
     const getFavorites = async () => {
 
         try {
-            var savedFavorites = await AsyncStorage.getItem('favorites')
-            console.log("eldeki savedFavorites object:", savedFavorites)
-            if (savedFavorites !== null && JSON.parse(savedFavorites).length !== 0) {
-                console.log("savedfavorites are exists")
-                setSavedFavorites(JSON.parse(savedFavorites))
+            var favoritedCoinIds = await AsyncStorage.getItem('favorites')
+            console.log("eldeki favoritedCoinIds object:", favoritedCoinIds)
+            if (favoritedCoinIds !== null && JSON.parse(favoritedCoinIds).length !== 0) {
+                console.log("favoritedCoinIds are exists")
+                setFavoritedCoinIds(JSON.parse(favoritedCoinIds))
             } else {
-                console.log("savedFavorites is empty")
+                console.log("favoritedCoinIds is empty")
                 setNotifyEmptyList(true)
             }
         } catch (e) {
@@ -145,18 +145,18 @@ export default function FavoritesScreen() {
         try {
             const jsonValue = await AsyncStorage.getItem('favorites')
             if (jsonValue !== null) { //if saved value is not null then push into it
-                var filteredFavoriteCoins = favoritedCoins.filter(function (value, index, arr) {
+                var filteredFavoritedCoinDatas = favoritedCoinDatas.filter(function (value, index, arr) {
                     return value.id !== selectedCoin.id;
                 });
                 var filteredJsonValue = JSON.parse(jsonValue).filter(function (value, index, arr) {
                     return value !== selectedCoin.id;
                 });
                 //console.log("silindikten sonra filteredFavoriteCoins:", filteredFavoriteCoins);
-                if (filteredFavoriteCoins.length === 0) {//if there is no favorites, then notify user
+                if (filteredFavoritedCoinDatas.length === 0) {//if there is no favorites, then notify user
                     setNotifyEmptyList(true)
                 }
-                setFavoritedCoins(filteredFavoriteCoins)//delete from state array
-                setSavedFavorites(filteredJsonValue)
+                setFavoritedCoinDatas(filteredFavoritedCoinDatas)//delete from state array
+                setFavoritedCoinIds(filteredJsonValue)
                 await AsyncStorage.setItem('favorites', JSON.stringify(filteredJsonValue))//delete from local storage
                 showToast('error', 'Successful', `${selectedCoin.name} has been removed from your favorites`)
             }
@@ -210,7 +210,7 @@ export default function FavoritesScreen() {
 
                     renderList ? (<FlatList
                         keyExtractor={(item) => item.id}
-                        data={favoritedCoins}
+                        data={favoritedCoinDatas}
                         showsVerticalScrollIndicator={false}
                         showsHorizontalScrollIndicator={false}
                         renderItem={({ item }) => (
