@@ -13,6 +13,7 @@ import uuid from 'react-native-uuid';
 import Toast from 'react-native-toast-message';
 import LottieView from 'lottie-react-native';
 import { useSelector } from 'react-redux';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 
 export default function DetailsScreen(props) {
@@ -21,9 +22,9 @@ export default function DetailsScreen(props) {
     const myState = useSelector(state => state)
     const selectedCoin = props.route.params.selectedCoin;
     const [formattedData, setFormattedData] = useState(null)
-    const [news, setNews] = useState([])
     const [comment, setComment] = useState("")
     const [comments, setComments] = useState()
+    const [favoritedCount, setFavoritedCount] = useState(0)
 
 
     useEffect(() => {
@@ -34,11 +35,8 @@ export default function DetailsScreen(props) {
         React.useCallback(() => {
             console.log("details screen focused")
             console.log("formatlanacak selectedCoin:", selectedCoin);
-            getComments()
+            getCoinDetails()
             setFormattedData(formatMarketData(selectedCoin));
-            getNewsByName(selectedCoin.name + ' coin').then((response) => {
-                setNews(response.data.articles)
-            })
 
             return () => {
                 console.log("details screen focused")
@@ -52,15 +50,30 @@ export default function DetailsScreen(props) {
 
     }, [formattedData])
 
-    useEffect(() => {
-        console.log("gelen news:", news)
-    }, [news])
 
     useEffect(() => {
         console.log("eldeki comments:", comments)
 
     }, [comments])
 
+    const getCoinDetails = () => {
+        getComments()
+        getFavoritedCountFromFirestore()
+    }
+
+    const getFavoritedCountFromFirestore = () => {
+        const id = selectedCoin.id
+        const subscriber = firestore()
+            .collection('coins')
+            .doc(id)
+            .onSnapshot(documentSnapshot => {
+                console.log("gelen favoritedCount document snapshot:", documentSnapshot)
+                if (typeof documentSnapshot._data !== 'undefined' && typeof documentSnapshot._data.favoritedCount !== 'undefined') {
+                    setFavoritedCount(documentSnapshot._data.favoritedCount)
+                }
+            })
+        return () => subscriber();
+    }
 
     const getComments = () => {
         const id = selectedCoin.id
@@ -137,6 +150,26 @@ export default function DetailsScreen(props) {
         });
     }
 
+    const ShowCommentAndFavoritedCount = () => (
+        <View style={styles.upperTitles}>
+            <Text style={styles.largeTitle}>Comments</Text>
+            {
+                favoritedCount !== 0 && <View style={styles.upperTitles}>
+                    <Icon name="heart" color='red' size={20} />
+                    <Text>{favoritedCount}</Text>
+                    {
+                        (typeof comments !== 'undefined' && comments.length != 0) &&
+                        <View style={{ ...styles.upperTitles, marginHorizontal: 5 }}>
+                            <Icon name="chatbubble-outline" color='black' size={18} />
+                            <Text>{comments.length}</Text></View>
+                    }
+                </View>
+            }
+        </View>
+    )
+
+
+
     return (
         <SafeAreaView>
             <ScrollView
@@ -157,7 +190,8 @@ export default function DetailsScreen(props) {
                 <View style={styles.divider} />
 
                 <View style={styles.titleWrapper}>
-                    <Text style={styles.largeTitle}>Comments</Text>
+
+                    <ShowCommentAndFavoritedCount />
 
                     <TextInput
                         label="Comment"
@@ -232,8 +266,6 @@ export default function DetailsScreen(props) {
                             />
                         </View>)
                     }
-
-
 
                 </View>
 

@@ -16,7 +16,7 @@ export const getNewsByName = name => {
                 q: name,
                 sortBy: 'publishedAt',
                 language: 'en',
-                apiKey: 'ddc5379d1c5b452e8f7b9f55a3b76cda'
+                apiKey: 'd330ab2fa05a40afb6c2f9f13c9360cf'
             }
         })
 }
