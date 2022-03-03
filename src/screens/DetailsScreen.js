@@ -28,7 +28,7 @@ export default function DetailsScreen(props) {
 
 
     useEffect(() => {
-
+        
     }, [])
 
     useFocusEffect(
@@ -106,7 +106,8 @@ export default function DetailsScreen(props) {
                     commentDate: moment().format(),
                     userEmail: auth().currentUser?.email,
                     userFirstName: myState.userFirstName,
-                    userLastName: myState.userLastName
+                    userLastName: myState.userLastName,
+                    userProfileImage: myState.userProfileImage
                 }).then(() => {
                     console.log(comment, " added")
                     setComment('')
@@ -214,6 +215,12 @@ export default function DetailsScreen(props) {
                                 <View key={comment.commentDate}>
                                     <View style={styles.upperTitles}>
                                         <View>
+                                            {
+                                                ((comment.userProfileImage !== null && typeof comment.userProfileImage !== 'undefined')
+                                                    ? <Image source={{ uri: comment.userProfileImage }} style={styles.image} />
+                                                    : <Image source={{ uri: "https://cdn-icons-png.flaticon.com/512/16/16467.png" }} style={styles.image} />
+                                                )
+                                            }
                                             <Text style={{ ...styles.title, fontWeight: 'bold', marginVertical: 4 }}>{comment.comment}</Text>
                                             <Text>{comment.userFirstName} {comment.userLastName} </Text>
                                         </View>

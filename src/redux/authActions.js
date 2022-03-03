@@ -7,6 +7,13 @@ export const logoutSuccess = () => {
     }
 }
 
+export const updateUserInfo = newState => {
+    return {
+        type: ACTIONS.UPDATE_USER_INFO,
+        payload: newState
+    }
+}
+
 export const loginSuccess = authState => {
     return {
         type: ACTIONS.LOGIN_SUCCESS,

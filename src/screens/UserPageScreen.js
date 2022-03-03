@@ -9,11 +9,12 @@ import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import auth from '@react-native-firebase/auth';
 import { useDispatch } from 'react-redux'
-import { logoutSuccess } from '../redux/authActions'
+import { logoutSuccess, updateUserInfo } from '../redux/authActions'
 import ImagePicker from 'react-native-image-crop-picker';
 import storage from '@react-native-firebase/storage';
 import firestore from '@react-native-firebase/firestore';
 import { useSelector } from 'react-redux';
+import Toast from 'react-native-toast-message';
 
 
 export default function UserPageScreen() {
@@ -37,16 +38,30 @@ export default function UserPageScreen() {
             .get().then((response) => {
                 //verileri redux'a at
                 console.log("reduxa atılacak veri: ", response._data)
-                //setUserFirstName(response._data.userFirstName)
-                //setUserLastName(response._data.userLastName)
-                if (typeof response._data.profileImage !== 'undefined' && response._data.profileImage !== null) {//if the user already have a profile image
-                    setImage(response._data.profileImage)
+                /*
+                @TODO
+                setUserFirstName(response._data.userFirstName)
+                setUserLastName(response._data.userLastName)
+                userFirstName ve userLastName update edildiği yerde updateReduxState({userFirstName:XXX, userLastName:XXX}) şeklinde redux state'i güncelle
+                */
+                if (typeof response._data.userProfileImage !== 'undefined' && response._data.userProfileImage !== null) {//if the user already have a profile image
+                    setImage(response._data.userProfileImage)
                 } else {//if user has no profile image before
                     setImage(null)
                 }
             })
-
     }, [])
+
+
+    useEffect(() => {
+        console.log("userpagescreen güncel image:", image)
+    }, [image])
+
+    const updateReduxState = (newState) => {
+        //state'deki değişikliği redux'a aktar
+        dispatch(updateUserInfo({ ...myState, ...newState }))
+        console.log("güncellenen redux:", myState)
+    }
 
     const onClickLogout = async () => {
         auth().signOut()
@@ -69,6 +84,8 @@ export default function UserPageScreen() {
             setImage(imageUri);
             submitImage(imageUri)
             console.log("imageUri içindeki :", imageUri);
+        }).catch((err) => {
+            console.log("error while image picker", err)
         });
     };
 
@@ -82,7 +99,7 @@ export default function UserPageScreen() {
             .collection("user")
             .doc("information")
             .update({
-                profileImage: imageUrl,
+                userProfileImage: imageUrl,
             }).then((response) => {
 
                 console.log("Photo putted into firestore")
@@ -130,10 +147,10 @@ export default function UserPageScreen() {
             setUploading(false);
             //setImage(null);
 
-            Alert.alert(
-                'Image uploaded!',
-                'Your image has been uploaded successfully!',
-            );
+            showToast('success', 'Profile Image Changed', `Your image has been uploaded successfully!`)
+
+            updateReduxState({ userProfileImage: url })
+
             return url;
 
         } catch (e) {
@@ -142,6 +159,12 @@ export default function UserPageScreen() {
         }
 
     };
+
+    const showToast = (type, text1, text2) => {
+        Toast.show({
+            type, text1, text2
+        });
+    }
 
     return (
         <ScrollView>
@@ -156,9 +179,12 @@ export default function UserPageScreen() {
                 justifyContent: 'center',
             }}>
 
-                <TouchableOpacity onPress={() => choosePhotoFromLibrary()}>
+                <TouchableOpacity
+                    onPress={() => choosePhotoFromLibrary()}>
                     {image != null ?
-                        <Image source={{ uri: image }} style={{ width: 250, height: 250 }} />
+                        <Image source={{ uri: image }} style={{
+                            width: 250, height: 250, borderRadius: 150, shadowColor: "black"
+                        }} />
                         :
                         <Image source={{ uri: "https://cdn-icons-png.flaticon.com/512/16/16467.png" }} style={{ width: 250, height: 250 }} />}
                 </TouchableOpacity>
