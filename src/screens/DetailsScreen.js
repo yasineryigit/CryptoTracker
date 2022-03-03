@@ -11,6 +11,7 @@ import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import uuid from 'react-native-uuid';
 import Toast from 'react-native-toast-message';
+import LottieView from 'lottie-react-native';
 
 
 export default function DetailsScreen(props) {
@@ -20,7 +21,7 @@ export default function DetailsScreen(props) {
     const [formattedData, setFormattedData] = useState(null)
     const [news, setNews] = useState([])
     const [comment, setComment] = useState('')
-    const [comments, setComments] = useState('')
+    const [comments, setComments] = useState()
 
 
     useEffect(() => {
@@ -72,10 +73,7 @@ export default function DetailsScreen(props) {
                     comments.push(item._data)
                 });
 
-                comments.sort(function (a, b) {
-                    var dateA = new Date(a.commentDate), dateB = new Date(b.commentDate)
-                    return dateA - dateB
-                });
+                comments.sort((a, b) => moment(a.commentDate).diff(moment(b.commentDate)))
                 setComments(comments)
             })
         return () => subscriber();
@@ -89,7 +87,7 @@ export default function DetailsScreen(props) {
             .doc(`comment-${uuid.v4()}`)
             .set({
                 comment,
-                commentDate: moment().format("DD-MM-YYYY hh:mm:ss"),
+                commentDate: moment().format(),
                 userEmail: auth().currentUser?.email
             }).then(() => {
                 console.log(comment, " added")
@@ -184,8 +182,50 @@ export default function DetailsScreen(props) {
                                     <View style={styles.divider} />
                                 </View>
 
-                            )) : null
+                            )) : 
+                            <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                                <LottieView
+                                    source={require('../assets/loading.json')}
+                                    autoPlay
+                                    loop={true}
+                                    style={{
+                                        width: 80,
+                                        height: 80,
+                                        marginBottom: 8,
+                                    }}
+                                    speed={0.5}
+                                    onAnimationFinish={() => {
+                                        //console.log('Animation Finished!')
+                                        // this.props.navigation.replace('Home');
+                                    }}
+                                />
+                            </View>
                     }
+                    {
+                        (typeof comments !== 'undefined' && comments.length == 0) &&
+                        (<View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                            <Text>There is no comment yet</Text>
+                            <Text>Be the first!</Text>
+                            <LottieView
+                                source={require('../assets/rocket3.json')}
+                                autoPlay
+                                loop={true}
+                                speed={1}
+                                style={{
+                                    width: 80,
+                                    height: 80,
+                                    marginBottom: 8,
+                                }}
+                                onAnimationFinish={() => {
+                                    console.log('Animation Finished!')
+                                    // this.props.navigation.replace('Home');
+                                }}
+                            />
+                        </View>)
+                    }
+
+
+
                 </View>
 
 
