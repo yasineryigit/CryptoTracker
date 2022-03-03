@@ -3,17 +3,32 @@ import { View, Text } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { useNavigation } from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+import { useDispatch } from 'react-redux'
+import { loginSuccess } from '../redux/authActions'
 
 export default function SplashScreen() {
 
     const navigation = useNavigation();
+    const dispatch = useDispatch();
 
     useEffect(() => {
         const unsubscribe = auth().onAuthStateChanged(user => {
             if (user) {
-                navigation.replace("MyTabs")
-                console.log(`User logged in successfully ${user.email}`)
+                firestore().collection('users')
+                    .doc(`user-${auth().currentUser?.uid}`)
+                    .collection("user")
+                    .doc("information")
+                    .get().then((response) => {
+                        //verileri redux'a at
+                        console.log("reduxa atılacak veri: ", response._data)
+                        dispatch(loginSuccess(response._data))
+                        navigation.replace("MyTabs")
+                        console.log(`User logged in successfully ${user.email}`)
+                    })
+
             } else {
+                console.log("splash screendeki adam bile duydu")
                 navigation.replace("StartScreen")
 
             }

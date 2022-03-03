@@ -9,6 +9,10 @@ import TextInput from '../components/TextInput'
 import BackButton from '../components/BackButton'
 import { theme } from '../core/theme'
 import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+import uuid from 'react-native-uuid';
+import { useDispatch } from 'react-redux'
+import { loginSuccess } from '../redux/authActions'
 
 
 export default function RegisterScreen({ navigation }) {
@@ -16,15 +20,34 @@ export default function RegisterScreen({ navigation }) {
   const [userLastName, setUserLastName] = useState()
   const [userEmail, setUserEmail] = useState()
   const [userPassword, setUserPassword] = useState()
-  
+  const dispatch = useDispatch();
+
 
   const onSignUpPressed = () => {
 
     auth().createUserWithEmailAndPassword(userEmail, userPassword)
-      .then(userCredentials => {
-        const user = userCredentials.user
-        navigation.replace("MyTabs")
-        console.log(`User created successfully ${user.email}`)
+      .then(user => {
+
+        firestore().collection('users')
+          .doc(`user-${auth().currentUser?.uid}`)
+          .collection("user")
+          .doc("information")
+          .set({
+            id: auth().currentUser?.uid,
+            userFirstName,
+            userLastName
+          }).then((response) => {
+          
+            dispatch(loginSuccess({
+              id: auth().currentUser?.uid,
+              userFirstName,
+              userLastName
+            }))
+            navigation.replace("MyTabs")
+            //verileri redux'a at
+            console.log("register response : ", response)
+            console.log(`User created successfully ${user.email}`)
+          })
 
       }).catch(err => {
         console.log(err)
@@ -42,6 +65,23 @@ export default function RegisterScreen({ navigation }) {
         <BackButton goBack={navigation.goBack} />
         <Logo />
         <Header>Create Account</Header>
+
+        <TextInput
+          label="First Name"
+          returnKeyType="next"
+          value={userFirstName}
+          onChangeText={(text) => setUserFirstName(text)}
+
+
+        />
+
+        <TextInput
+          label="Last Name"
+          returnKeyType="next"
+          value={userLastName}
+          onChangeText={(text) => setUserLastName(text)}
+
+        />
 
         <TextInput
           label="Email"

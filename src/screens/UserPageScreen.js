@@ -8,14 +8,18 @@ import Background from '../components/Background'
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import auth from '@react-native-firebase/auth';
+import { useDispatch } from 'react-redux'
+import { logoutSuccess } from '../redux/authActions'
 
 export default function UserPageScreen() {
 
     const navigation = useNavigation();
+    const dispatch = useDispatch();
 
     const onClickLogout = async () => {
         auth().signOut()
             .then(() => {
+                dispatch(logoutSuccess())
                 navigation.replace("StartScreen")
             }).catch((err) => {
                 console.log(err)

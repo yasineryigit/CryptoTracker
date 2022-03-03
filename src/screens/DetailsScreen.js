@@ -12,15 +12,17 @@ import auth from '@react-native-firebase/auth';
 import uuid from 'react-native-uuid';
 import Toast from 'react-native-toast-message';
 import LottieView from 'lottie-react-native';
+import { useSelector } from 'react-redux';
 
 
 export default function DetailsScreen(props) {
 
     const navigation = useNavigation();
+    const myState = useSelector(state => state)
     const selectedCoin = props.route.params.selectedCoin;
     const [formattedData, setFormattedData] = useState(null)
     const [news, setNews] = useState([])
-    const [comment, setComment] = useState('')
+    const [comment, setComment] = useState("")
     const [comments, setComments] = useState()
 
 
@@ -73,27 +75,34 @@ export default function DetailsScreen(props) {
                     comments.push(item._data)
                 });
 
-                comments.sort((a, b) => moment(a.commentDate).diff(moment(b.commentDate)))
+                comments.sort((a, b) => moment(b.commentDate).diff(moment(a.commentDate)))
                 setComments(comments)
             })
         return () => subscriber();
     }
 
     const sendComment = () => {
-        const id = selectedCoin.id
-        firestore().collection('coins')
-            .doc(id)
-            .collection('comments')
-            .doc(`comment-${uuid.v4()}`)
-            .set({
-                comment,
-                commentDate: moment().format(),
-                userEmail: auth().currentUser?.email
-            }).then(() => {
-                console.log(comment, " added")
-                setComment('')
-                showToast('success', 'Successful', `Comment shared on ${selectedCoin.name} `)
-            })
+        if (comment !== "") {
+            const id = selectedCoin.id
+            firestore().collection('coins')
+                .doc(id)
+                .collection('comments')
+                .doc(`comment-${uuid.v4()}`)
+                .set({
+                    comment,
+                    commentDate: moment().format(),
+                    userEmail: auth().currentUser?.email,
+                    userFirstName: myState.userFirstName,
+                    userLastName: myState.userLastName
+                }).then(() => {
+                    console.log(comment, " added")
+                    setComment('')
+                    showToast('success', 'Successful', `Comment shared on ${selectedCoin.name} `)
+                })
+        } else {
+            showToast('info', 'Write something', `Please fill the comment area before you send `)
+        }
+
     }
 
     const formatSparkline = (numbers) => {
@@ -172,7 +181,7 @@ export default function DetailsScreen(props) {
                                     <View style={styles.upperTitles}>
                                         <View>
                                             <Text style={{ ...styles.title, fontWeight: 'bold', marginVertical: 4 }}>{comment.comment}</Text>
-                                            <Text>{comment.userEmail}</Text>
+                                            <Text>{comment.userFirstName} {comment.userLastName} </Text>
                                         </View>
 
                                         <Text>{moment(comment.commentDate).fromNow()}</Text>
@@ -182,7 +191,7 @@ export default function DetailsScreen(props) {
                                     <View style={styles.divider} />
                                 </View>
 
-                            )) : 
+                            )) :
                             <View style={{ justifyContent: 'center', alignItems: 'center' }}>
                                 <LottieView
                                     source={require('../assets/loading.json')}

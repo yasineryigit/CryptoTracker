@@ -13,6 +13,8 @@ import RegisterScreen from './src/screens/RegisterScreen';
 import SplashScreen from './src/screens/SplashScreen';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import MyTopTabs from './src/navigation/MyTopTabs';
+import { Provider as StoreProvider } from 'react-redux'
+import configureStore from './src/redux/configureStore';
 
 const Stack = createStackNavigator()
 
@@ -54,9 +56,10 @@ const MyStackNavigator = () => {
 }
 
 export default function App() {
-
+  const store = configureStore()//redux içindeki store'u döndüren metodu verdik
+  
   return (
-    <>
+    <StoreProvider store={store}>
       <NavigationContainer>
 
         <MyStackNavigator />
@@ -65,7 +68,7 @@ export default function App() {
 
 
       <Toast />
-    </>
+    </StoreProvider>
   );
 
 }

@@ -9,20 +9,33 @@ import TextInput from '../components/TextInput'
 import BackButton from '../components/BackButton'
 import { theme } from '../core/theme'
 import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+import { useDispatch } from 'react-redux'
+import { loginSuccess } from '../redux/authActions'
 
 
 
 export default function LoginScreen({ navigation }) {
   const [userEmail, setUserEmail] = useState()
   const [userPassword, setUserPassword] = useState()
+  const dispatch = useDispatch();
 
   const onLoginPressed = () => {
 
     auth().signInWithEmailAndPassword(userEmail, userPassword)
-      .then(userCredentials => {
-        const user = userCredentials.user
-        navigation.replace("MyTabs")
-        console.log(`User logged in successfully ${user.email}`)
+      .then(user => {
+        //user bilgilerini çek ve redux'a at 
+        firestore().collection('users')
+          .doc(`user-${auth().currentUser?.uid}`)
+          .collection("user")
+          .doc("information")
+          .get().then((response) => {
+            //verileri redux'a at
+            console.log("reduxa atılacak veri: ", response._data)
+            dispatch(loginSuccess(response._data))
+            navigation.replace("MyTabs")
+          })
+
       }).catch(err => {
         console.log(err)
         alert(err)

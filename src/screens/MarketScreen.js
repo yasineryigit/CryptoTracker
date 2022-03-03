@@ -17,6 +17,7 @@ import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import uuid from 'react-native-uuid';
 import { addToFavorites } from '../db/FavoriteManager';
+import { useSelector } from 'react-redux';
 
 export default function MarketScreen() {
 
@@ -26,10 +27,11 @@ export default function MarketScreen() {
     const [isRunning, setIsRunning] = useState(true);
     const funRef = useRef(null);
     const navigation = useNavigation();
+    const myState = useSelector(state => state)
 
     useFocusEffect(
         React.useCallback(() => {
-
+            console.log("gelen redux verisi:", myState);
             if (isRunning) {
                 funRef.current = setInterval(() => { // Save reference to interval.
                     getAllCoins().then((response) => {
