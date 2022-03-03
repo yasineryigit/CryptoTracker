@@ -80,7 +80,7 @@ export default function FavoritesScreen() {
             console.log("render: ", render)
         }
     }, [favoritedCoinDatas])
-
+    
 
     useEffect(() => {//add datas of favorited coins
         var list = []
