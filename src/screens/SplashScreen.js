@@ -13,6 +13,8 @@ export default function SplashScreen() {
     const dispatch = useDispatch();
 
     useEffect(() => {
+
+
         const unsubscribe = auth().onAuthStateChanged(user => {
             if (user) {
                 firestore().collection('users')
@@ -28,7 +30,6 @@ export default function SplashScreen() {
                     })
 
             } else {
-                console.log("splash screendeki adam bile duydu")
                 navigation.replace("StartScreen")
 
             }
@@ -46,11 +47,12 @@ export default function SplashScreen() {
             }}
         >
 
+
             <LottieView
-                source={require('../assets/splash.json')}
+                source={require('../assets/loading4.json')}
                 autoPlay
                 loop={true}
-                speed={0.5}
+                speed={1}
                 onAnimationFinish={() => {
                     console.log('Animation Finished!')
                     // this.props.navigation.replace('Home');

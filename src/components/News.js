@@ -6,7 +6,7 @@ import moment from 'moment';
 export default function News(props) {
 
     const navigation = useNavigation();
-    
+
     useEffect(() => {
         console.log("news props:", props)
     }, [])
@@ -24,14 +24,14 @@ export default function News(props) {
                 <View style={styles.titlesWrapper}>
                     <View style={styles.upperTitles}>
                         <View style={styles.upperLeftTitle}>
-                            <Image source={{ uri: news.urlToImage }} style={styles.image} />
-                            <Text style={styles.title}>{news.title}</Text>
+                            <Image source={{ uri: news.image?.thumbnail.contentUrl }} style={styles.image} />
+                            <Text style={styles.title}>{news.name}</Text>
                         </View>
                     </View>
                     <View style={styles.lowerTitles}>
-                        <Text style={styles.subtitle}>{news.content.slice(0, 200).concat('...')}</Text>
+                        <Text style={styles.subtitle}>{news.description.slice(0, 200).concat('...')}</Text>
                     </View>
-                    <Text style={{ marginTop: 8 }}> {moment(news.publishedAt).fromNow()}</Text>
+                    <Text style={{ marginTop: 8 }}> {moment(news.datePublished).fromNow()}</Text>
                 </View>
 
 

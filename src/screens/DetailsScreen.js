@@ -28,7 +28,7 @@ export default function DetailsScreen(props) {
 
 
     useEffect(() => {
-        
+
     }, [])
 
     useFocusEffect(
@@ -233,6 +233,7 @@ export default function DetailsScreen(props) {
                                 </View>
 
                             )) :
+
                             <View style={{ justifyContent: 'center', alignItems: 'center' }}>
                                 <LottieView
                                     source={require('../assets/loading.json')}

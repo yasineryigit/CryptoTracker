@@ -1,19 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
-import { getNewsByName } from '../api/apiCalls';
+import { getNewsByName, searchNewsOnBing } from '../api/apiCalls';
 import News from '../components/News';
 
 export default function NewsScreen() {
 
     const [news, setNews] = useState([])
 
-
     useEffect(() => {
 
-        getNewsByName('cryptocurrency').then((response) => {
-            setNews(response.data.articles)
+        searchNewsOnBing("cryptocurrency", "en", "en-US", 30).then((response) => {
+            console.log("bing news:", response)
+            response = response.filter(news => typeof news.image !== 'undefined')
+            setNews(response)
         })
     }, [])
+
+
 
 
 
@@ -24,7 +27,7 @@ export default function NewsScreen() {
                     <Text style={styles.largeTitle}>News</Text>
                 </View>
             </>
-            <News news={news} />
+            {news ? <News news={news} /> : <Text>No news found</Text>}
         </ScrollView>
     );
 }

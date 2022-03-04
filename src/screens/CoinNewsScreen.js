@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
-import { getNewsByName } from '../api/apiCalls';
+import { getNewsByName, searchNewsOnBing } from '../api/apiCalls';
 import News from '../components/News';
 
 export default function CoinNewsScreen(props) {
 
     const [news, setNews] = useState([])
     const selectedCoin = props.route.params.selectedCoin;
-    
+
     useEffect(() => {
-        getNewsByName(selectedCoin.name + ' coin').then((response) => {
-            setNews(response.data.articles)
+        searchNewsOnBing(`${selectedCoin.name} coin`, "en", "en-US", 80).then((response) => {
+            console.log("bing news:", response)
+            response = response.filter(news => typeof news.image !== 'undefined')
+            setNews(response)
         })
     }, [])
 

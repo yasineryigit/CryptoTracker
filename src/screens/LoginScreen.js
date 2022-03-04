@@ -12,8 +12,7 @@ import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { useDispatch } from 'react-redux'
 import { loginSuccess } from '../redux/authActions'
-
-
+import LottieView from 'lottie-react-native';
 
 export default function LoginScreen({ navigation }) {
   const [userEmail, setUserEmail] = useState()
@@ -47,7 +46,17 @@ export default function LoginScreen({ navigation }) {
   return (
     <Background>
       <BackButton goBack={navigation.goBack} />
-      <Logo />
+      <LottieView
+        source={require('../assets/crypto.json')}
+        autoPlay
+        loop={true}
+        speed={1}
+        style={{ marginBottom: 200 }}
+        onAnimationFinish={() => {
+          console.log('Animation Finished!')
+          // this.props.navigation.replace('Home');
+        }}
+      />
       <Header>Welcome back.</Header>
 
 

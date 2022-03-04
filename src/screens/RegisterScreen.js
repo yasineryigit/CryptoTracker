@@ -37,7 +37,7 @@ export default function RegisterScreen({ navigation }) {
             userFirstName,
             userLastName
           }).then((response) => {
-          
+
             dispatch(loginSuccess({
               id: auth().currentUser?.uid,
               userFirstName,
