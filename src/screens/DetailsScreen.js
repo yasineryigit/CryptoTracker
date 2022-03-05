@@ -14,6 +14,7 @@ import Toast from 'react-native-toast-message';
 import LottieView from 'lottie-react-native';
 import { useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { addToFavorites, removeFromFavorites } from '../db/FavoriteManager';
 
 
 export default function DetailsScreen(props) {
@@ -25,6 +26,8 @@ export default function DetailsScreen(props) {
     const [comment, setComment] = useState("")
     const [comments, setComments] = useState()
     const [favoritedCount, setFavoritedCount] = useState(0)
+    const [favoritedCoinIds, setFavoritedCoinIds] = useState()
+    const [isFavorited, setIsFavorited] = useState()
 
 
     useEffect(() => {
@@ -36,6 +39,7 @@ export default function DetailsScreen(props) {
             console.log("details screen focused")
             console.log("formatlanacak selectedCoin:", selectedCoin);
             getCoinDetails()
+            fetchFavorites()
             setFormattedData(formatMarketData(selectedCoin));
 
             return () => {
@@ -55,6 +59,33 @@ export default function DetailsScreen(props) {
         console.log("eldeki comments:", comments)
 
     }, [comments])
+
+    useEffect(() => {
+        if (typeof favoritedCoinIds !== 'undefined') {
+            favoritedCoinIds.includes(selectedCoin.id) ? setIsFavorited(true) : setIsFavorited(false)
+        }
+    }, [favoritedCoinIds])
+
+    const fetchFavorites = () => {
+        const subscriber = firestore()
+            .collection('users')
+            .doc(`user-${auth().currentUser?.uid}`)
+            .collection('favorites')
+            .onSnapshot(documentSnapshot => {
+                const ids = []
+                console.log("favorites documentSnapshot", documentSnapshot)
+                documentSnapshot.forEach(documentSnapshot => {
+                    //console.log("favorited coin from firestore", documentSnapshot._data.id);
+                    ids.push(documentSnapshot._data.id)
+                });
+
+                if (ids.length !== 0) {
+                    console.log("favoritedCoinIds are exists")
+                    setFavoritedCoinIds(ids)
+                }
+            })
+        return () => subscriber();
+    }
 
     const getCoinDetails = () => {
         getComments()
@@ -151,14 +182,33 @@ export default function DetailsScreen(props) {
         });
     }
 
+    const setFavoritedStatus = (status) => {
+        setIsFavorited(status)
+        status ? addToFavorites(selectedCoin) : removeFromFavorites(selectedCoin);
+    }
+
+
+
     const ShowCommentAndFavoritedCount = () => (
         <View style={styles.upperTitles}>
             <Text style={styles.largeTitle}>Comments</Text>
             {
-                favoritedCount !== 0 && <View style={styles.upperTitles}>
-                    <Icon name="heart" color='red' size={20} />
-                    <Text>{favoritedCount}</Text>
+                <View style={styles.upperTitles}>
                     {
+                        //kullanıcının favorilerini çek ve eğer orda varsa göster
+                        (typeof favoritedCoinIds !== 'undefined' && isFavorited) ?
+                            <TouchableOpacity onPress={() => { setFavoritedStatus(false) }} >
+                                <Icon name="heart" color='red' size={25} />
+                            </TouchableOpacity> :
+                            <TouchableOpacity onPress={() => { setFavoritedStatus(true) }}>
+                                <Icon name="heart-outline" color='black' size={25} />
+                            </TouchableOpacity>
+                    }
+                    {
+                        (favoritedCount !== 0) && <Text>{favoritedCount}</Text>
+                    }
+                    {
+
                         (typeof comments !== 'undefined' && comments.length != 0) &&
                         <View style={{ ...styles.upperTitles, marginHorizontal: 5 }}>
                             <Icon name="chatbubble-outline" color='black' size={18} />

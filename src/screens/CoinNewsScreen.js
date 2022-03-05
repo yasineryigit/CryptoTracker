@@ -24,7 +24,10 @@ export default function CoinNewsScreen(props) {
                     <Text style={styles.largeTitle}>{selectedCoin.name} News</Text>
                 </View>
             </>
-            <News news={news} />
+            {
+                (news.length > 0) ? <News news={news} /> :
+                    <Text>There is no news available</Text>
+            }
         </ScrollView>
     );
 }

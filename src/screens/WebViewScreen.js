@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 
 export default function WebViewScreen(props) {
     const selectedNewsUrl = props.route.params.selectedNewsUrl;
-
+    
     useEffect(() => {
         console.log("coming selectedNewsUrl:", selectedNewsUrl);
 

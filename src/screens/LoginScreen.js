@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { TouchableOpacity, StyleSheet, View, Alert } from 'react-native'
 import { Text } from 'react-native-paper'
 import Background from '../components/Background'
@@ -13,11 +13,22 @@ import firestore from '@react-native-firebase/firestore';
 import { useDispatch } from 'react-redux'
 import { loginSuccess } from '../redux/authActions'
 import LottieView from 'lottie-react-native';
+import Dialog from "react-native-dialog";
+import Toast from 'react-native-toast-message';
 
 export default function LoginScreen({ navigation }) {
   const [userEmail, setUserEmail] = useState()
   const [userPassword, setUserPassword] = useState()
+  const [visible, setVisible] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState()
+  const forgotEmailInputRef = useRef(null)
+
   const dispatch = useDispatch();
+
+  const setDialogVisibility = (status) => {
+    setVisible(status);
+  };
+
 
   const onLoginPressed = () => {
 
@@ -42,6 +53,23 @@ export default function LoginScreen({ navigation }) {
 
   }
 
+  const sendConfirmationEmail = () => {
+    console.log("mail gönderilecek hesap:", forgotEmail)
+    auth().sendPasswordResetEmail(forgotEmail)
+      .then((user) => {
+        showToast('success', 'Successful', `We've sent you an email with a link to reset your password. Please check your inbox `)
+      }).catch(function (e) {
+        console.log(e)
+        showToast('error', 'Error', `Error: ${e.message}`)
+      })
+    setDialogVisibility(false)
+  }
+
+  const showToast = (type, text1, text2) => {
+    Toast.show({
+      type, text1, text2
+    });
+  }
 
   return (
     <Background>
@@ -89,6 +117,27 @@ export default function LoginScreen({ navigation }) {
           <Text style={styles.link}>Sign up</Text>
         </TouchableOpacity>
       </View>
+      <View style={styles.row}>
+        <TouchableOpacity onPress={() => setDialogVisibility(true)}>
+          <Text style={styles.link}>Forgot Password?</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.container}>
+        <Dialog.Container
+          visible={visible}
+          onBackdropPress={() => setDialogVisibility(false)}
+          onRequestClose={() => setDialogVisibility(false)}
+        >
+          <Dialog.Title>Forgot Password</Dialog.Title>
+          <Dialog.Description>
+            Please enter your email address to reset your password
+          </Dialog.Description>
+          <Dialog.Input label="Email" onChangeText={(email) => setForgotEmail(email)} />
+          <Dialog.Button label="Send confirmation email" onPress={() => sendConfirmationEmail()} />
+
+        </Dialog.Container>
+      </View>
     </Background>
   )
 
@@ -116,5 +165,11 @@ const styles = StyleSheet.create({
   link: {
     fontWeight: 'bold',
     color: theme.colors.primary,
+  },
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
   },
 })

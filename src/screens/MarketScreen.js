@@ -34,7 +34,7 @@ export default function MarketScreen() {
             console.log("gelen redux verisi:", myState);
             if (isRunning) {
                 funRef.current = setInterval(() => { // Save reference to interval.
-                    getAllCoins().then((response) => {
+                    getAllCoins(25,1).then((response) => {
                         setAllCoins(response.data)
                         console.log("marketscreen interval working")
                     }).catch((error) => {
@@ -93,6 +93,7 @@ export default function MarketScreen() {
                 data={allCoins}
                 showsVerticalScrollIndicator={false}
                 showsHorizontalScrollIndicator={false}
+                initialNumToRender={25}
                 renderItem={({ item }) => (
                     <ListItem
                         name={item.name}

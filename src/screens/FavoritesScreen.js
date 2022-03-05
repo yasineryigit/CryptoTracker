@@ -80,7 +80,7 @@ export default function FavoritesScreen() {
             console.log("render: ", render)
         }
     }, [favoritedCoinDatas])
-    
+
 
     useEffect(() => {//add datas of favorited coins
         var list = []
@@ -112,7 +112,7 @@ export default function FavoritesScreen() {
 
     const fetchAllCoins = () => {
 
-        getAllCoins().then((response) => {
+        getAllCoins(25, 1).then((response) => {
             console.log("gelen response:", response.data)
             setAllCoins(response.data)
         })

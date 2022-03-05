@@ -9,7 +9,7 @@ export default function NewsScreen() {
 
     useEffect(() => {
 
-        searchNewsOnBing("cryptocurrency", "en", "en-US", 30).then((response) => {
+        searchNewsOnBing("cryptocurrency", "en", "en-US", 80).then((response) => {
             console.log("bing news:", response)
             response = response.filter(news => typeof news.image !== 'undefined')
             setNews(response)

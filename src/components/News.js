@@ -29,7 +29,7 @@ export default function News(props) {
                         </View>
                     </View>
                     <View style={styles.lowerTitles}>
-                        <Text style={styles.subtitle}>{news.description.slice(0, 200).concat('...')}</Text>
+                        <Text style={styles.subtitle}>{news.description.slice(0, 250).concat('...')}</Text>
                     </View>
                     <Text style={{ marginTop: 8 }}> {moment(news.datePublished).fromNow()}</Text>
                 </View>
