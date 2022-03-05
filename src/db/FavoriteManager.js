@@ -5,6 +5,7 @@ import Toast from 'react-native-toast-message';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import uuid from 'react-native-uuid';
+import moment from 'moment';
 
 
 export const addToFavorites = async (selectedCoin) => {
@@ -29,7 +30,8 @@ export const addToFavorites = async (selectedCoin) => {
                     .collection('favorites')
                     .doc(id)
                     .set({
-                        id
+                        id,
+                        favoritedTime: moment().format(),
                     }).then(() => {
                         console.log(id, " added")
                     })

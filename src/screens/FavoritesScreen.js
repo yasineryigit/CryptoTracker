@@ -12,10 +12,11 @@ import { removeFromFavorites } from '../db/FavoriteManager';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import uuid from 'react-native-uuid';
+import moment from 'moment';
 
 export default function FavoritesScreen() {
 
-    const [favoritedCoinIds, setFavoritedCoinIds] = useState([])
+    const [favoritedCoins, setFavoritedCoins] = useState([])
     const [allCoins, setAllCoins] = useState([])
     const [favoritedCoinDatas, setFavoritedCoinDatas] = useState([])
     const [renderList, setRenderList] = useState(false)
@@ -87,7 +88,7 @@ export default function FavoritesScreen() {
         var isSync = false
         allCoins.forEach((coin, coinIndex) => {
             favoritedCoinDatas.forEach((favoritedCoinData, favoritedCoinDataIndex) => {
-                if (coin.id === favoritedCoinData.id && favoritedCoinIds.length === favoritedCoinDatas.length) {//if allcoins are already setted into favoritedCoinDatas in state
+                if (coin.id === favoritedCoinData.id && favoritedCoins.length === favoritedCoinDatas.length) {//if allcoins are already setted into favoritedCoinDatas in state
                     isSync = true
                     console.log("im updating")
                     setFavoritedCoinDatas(favoritedCoinDatas => {
@@ -98,16 +99,19 @@ export default function FavoritesScreen() {
                 }
             })
 
-            if (!isSync && favoritedCoinIds.find(favoritedCoinId => favoritedCoinId === coin.id) ? true : false) {//if allcoins are not setted into favoritedCoinDatas, push them into array and set it 
+            if (!isSync && favoritedCoins.find(favoritedCoin => favoritedCoin.id === coin.id) ? true : false) {//if allcoins are not setted into favoritedCoinDatas, push them into array and set it 
                 console.log("im adding")
+                var favoritedCoinObject = favoritedCoins.filter(obj => { return obj.id === coin.id })
+                coin.favoritedTime = favoritedCoinObject[0].favoritedTime
                 list.push(coin)
             }
         })
         if (list.length > 0) {//if there is data in list, set it to favoritedCoinDatas 
+            list.sort((a, b) => moment(a.favoritedTime).diff(moment(b.favoritedTime)))
             setFavoritedCoinDatas(list)
         }
 
-    }, [allCoins, favoritedCoinIds])
+    }, [allCoins, favoritedCoins])
 
 
     const fetchAllCoins = () => {
@@ -130,15 +134,18 @@ export default function FavoritesScreen() {
                 console.log("favorites documentSnapshot", documentSnapshot)
                 documentSnapshot.forEach(documentSnapshot => {
                     //console.log("favorited coin from firestore", documentSnapshot._data.id);
-                    ids.push(documentSnapshot._data.id)
+                    ids.push({
+                        id: documentSnapshot._data.id,
+                        favoritedTime: documentSnapshot._data.favoritedTime
+                    })
                 });
 
                 if (ids.length !== 0) {
-                    console.log("favoritedCoinIds are exists")
-                    setFavoritedCoinIds(ids)
+                    console.log("favoritedCoins are exists")
+                    setFavoritedCoins(ids)
                     setNotifyEmptyList(false)
                 } else {
-                    console.log("favoritedCoinIds is empty")
+                    console.log("favoritedCoins is empty")
                     setNotifyEmptyList(true)
                 }
             })

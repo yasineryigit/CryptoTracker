@@ -73,7 +73,7 @@ export default function DetailsScreen(props) {
             .collection('favorites')
             .onSnapshot(documentSnapshot => {
                 const ids = []
-                console.log("favorites documentSnapshot", documentSnapshot)
+                //console.log("favorites documentSnapshot", documentSnapshot)
                 documentSnapshot.forEach(documentSnapshot => {
                     //console.log("favorited coin from firestore", documentSnapshot._data.id);
                     ids.push(documentSnapshot._data.id)
