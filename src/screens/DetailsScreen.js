@@ -28,7 +28,7 @@ export default function DetailsScreen(props) {
     const [favoritedCount, setFavoritedCount] = useState(0)
     const [favoritedCoinIds, setFavoritedCoinIds] = useState()
     const [isFavorited, setIsFavorited] = useState()
-
+    const [userResponse, setUserResponse] = useState()
 
     useEffect(() => {
 
@@ -56,7 +56,8 @@ export default function DetailsScreen(props) {
 
 
     useEffect(() => {
-        console.log("eldeki comments:", comments)
+
+        console.log("eldeki comments: ", comments)
 
     }, [comments])
 
@@ -65,6 +66,8 @@ export default function DetailsScreen(props) {
             favoritedCoinIds.includes(selectedCoin.id) ? setIsFavorited(true) : setIsFavorited(false)
         }
     }, [favoritedCoinIds])
+
+
 
     const fetchFavorites = () => {
         const subscriber = firestore()
@@ -106,7 +109,20 @@ export default function DetailsScreen(props) {
         return () => subscriber();
     }
 
+    useEffect(() => {
+        if (typeof userResponse !== 'undefined') {
+            setComments(previousComment => [...previousComment, userResponse])//add new comment
+            //sort comments list
+            setComments(prevData => {
+                const dataToSort = [...prevData];
+                dataToSort.sort((a, b) => moment(b.commentDate).diff(moment(a.commentDate)))
+                return dataToSort; // <-- now sorted ascending
+            })
+        }
+    }, [userResponse])
+
     const getComments = () => {
+        console.log("GET COMMENTS TRIGGERED")
         const id = selectedCoin.id
         const subscriber = firestore()
             .collection('coins')
@@ -114,31 +130,45 @@ export default function DetailsScreen(props) {
             .collection('comments')
             .onSnapshot(documentSnapshot => {
                 let comments = []
-                //console.log("favorites documentSnapshot", documentSnapshot)
-                documentSnapshot._docs.forEach(item => {
-                    comments.push(item._data)
+                console.log("comments documentSnapshot", documentSnapshot)
+                documentSnapshot._docs.forEach(item => {//her bir comment'a ait user bilgilerini çek ve listeye at
+                    firestore().collection('users')
+                        .doc(`user-${item._data.userUuid}`)
+                        .collection("user")
+                        .doc("information")
+                        .get().then((userResponse) => {
+
+                            setUserResponse({
+                                ...item._data,//comment objesini at
+                                //user'a ait çektiğimiz detayları at
+                                userFirstName: userResponse._data.userFirstName,
+                                userLastName: userResponse._data.userLastName,
+                                userProfileImage: userResponse._data.userProfileImage,
+                            })
+                        })
                 });
 
                 comments.sort((a, b) => moment(b.commentDate).diff(moment(a.commentDate)))
                 setComments(comments)
+
+
             })
         return () => subscriber();
     }
 
     const sendComment = () => {
+        const commentUuid = uuid.v4()
         if (comment !== "") {
             const id = selectedCoin.id
             firestore().collection('coins')
                 .doc(id)
                 .collection('comments')
-                .doc(`comment-${uuid.v4()}`)
+                .doc(`comment-${commentUuid}`)
                 .set({
                     comment,
+                    commentUuid,
                     commentDate: moment().format(),
-                    userEmail: auth().currentUser?.email,
-                    userFirstName: myState.userFirstName,
-                    userLastName: myState.userLastName,
-                    userProfileImage: myState.userProfileImage
+                    userUuid: auth().currentUser?.uid
                 }).then(() => {
                     console.log(comment, " added")
                     setComment('')

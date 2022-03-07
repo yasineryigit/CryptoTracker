@@ -24,7 +24,6 @@ export const addToFavorites = async (selectedCoin) => {
             })
 
             if (!found) {
-
                 firestore().collection('users')
                     .doc(`user-${auth().currentUser?.uid}`)
                     .collection('favorites')
