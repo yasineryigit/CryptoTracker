@@ -43,37 +43,28 @@ export default function FavoritesScreen() {
     );
 
 
-    useEffect(() => {//favoritedCoins her değiştiğinde ona göre verileri getir
-
+    //favoritedCoins her değiştiğinde ona göre verileri getir. Intervali durdurmak için useFocusEffect'e çevrilebilir
+    useEffect(() => {
+        interval = setInterval(() => {
+            if (favoritedCoins.length > 0) {
+                console.log("çalıştırmadan önce favoritedCoins:", favoritedCoins)
+                //prepare string for request
+                let favoritedCoinsString = "";
+                favoritedCoins.forEach((favoritedCoin) => {
+                    // console.log("eklenecek id:", favoritedCoin.id)
+                    favoritedCoinsString = favoritedCoinsString.concat(favoritedCoin.id, ",")
+                })
+                console.log("kullanılacak favoritedCoinsString:", favoritedCoinsString)
+                fetchAllCoins(favoritedCoinsString)
+            }
+        }, 1000);
 
         return () => {
+            console.log("clear interval triggered")
+            clearInterval(interval)
+        }
 
-        };
     }, [favoritedCoins])
-
-    useFocusEffect(
-        React.useCallback(() => {
-
-            interval = setInterval(() => {
-                if (favoritedCoins.length > 0) {
-                    console.log("çalıştırmadan önce favoritedCoins:", favoritedCoins)
-                    //prepare string for request
-                    let favoritedCoinsString = "";
-                    favoritedCoins.forEach((favoritedCoin) => {
-                        // console.log("eklenecek id:", favoritedCoin.id)
-                        favoritedCoinsString = favoritedCoinsString.concat(favoritedCoin.id, ",")
-                    })
-                    console.log("kullanılacak favoritedCoinsString:", favoritedCoinsString)
-                    fetchAllCoins(favoritedCoinsString)
-                }
-            }, 1000);
-
-            return () => {
-                console.log("clear interval triggered")
-                clearInterval(interval)
-            }
-        }, [favoritedCoins])
-    );
 
 
 
@@ -134,10 +125,10 @@ export default function FavoritesScreen() {
                         favoritedTime: doc._data.favoritedTime
                     })
                 });
-                
+
 
                 console.log("favoritedCoins güncellenecek:", favorites)
-                if (favorites.length !== 0) {
+                if (favorites.length != 0) {
                     console.log("setFavoritedCoins | set ediyorum:", favorites)
                     setNotifyEmptyList(false)
                 } else {
