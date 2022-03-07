@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, FlatList, StyleSheet, SafeAreaView, Modal } from 'react-native';
+import { View, Text, ScrollView, FlatList, StyleSheet, SafeAreaView, Modal, ActivityIndicator } from 'react-native';
 import { getAllCoins } from '../api/apiCalls';
 import ListItem from '../components/ListItem';
 import {
@@ -22,6 +22,9 @@ import { useSelector } from 'react-redux';
 export default function MarketScreen() {
 
     const [allCoins, setAllCoins] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [pageCurrent, setPageCurrent] = useState(1)
+    const [isRefreshing, setIsRefreshing] = useState(false)
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedCoin, setSelectedCoin] = useState({})
     const [isRunning, setIsRunning] = useState(true);
@@ -34,21 +37,39 @@ export default function MarketScreen() {
             console.log("gelen redux verisi:", myState);
             if (isRunning) {
                 funRef.current = setInterval(() => { // Save reference to interval.
-                    getAllCoins(25,1).then((response) => {
-                        setAllCoins(response.data)
-                        console.log("marketscreen interval working")
-                    }).catch((error) => {
-                    })
+                    setIsLoading(true)
+                    getCoins(25, pageCurrent)
                 }, 1000);
             }
             return () => {
                 clearInterval(funRef.current); // Stop the interval.
             };
-        }, [])
+        }, [pageCurrent])
     );
 
-    const changeModalVisibility = (bool) => {
-        setIsModalVisible(bool)
+    /*
+useEffect(() => {
+    console.log("at the beginning, pageCurrent useEffect triggered")
+    setIsLoading(true)
+    getCoins(25, pageCurrent)
+}, [pageCurrent])
+*/
+
+    useEffect(() => {
+
+        //console.log("allCoins:", allCoins)
+
+    }, [allCoins])
+
+
+
+    const getCoins = (per_page, pageCurrent) => {
+        getAllCoins(per_page, pageCurrent).then((response) => {
+            setAllCoins(allCoins.concat(response.data))
+            setIsLoading(false)
+            console.log("marketscreen interval working")
+        }).catch((error) => {
+        })
     }
 
     const setData = async (option, index) => {
@@ -65,12 +86,10 @@ export default function MarketScreen() {
         }
     }
 
+    const changeModalVisibility = (bool) => {
+        setIsModalVisible(bool)
+    }
 
-    useEffect(() => {
-
-        //console.log("allCoins:", allCoins)
-
-    }, [allCoins])
 
     const ListHeader = () => (
         <>
@@ -81,11 +100,53 @@ export default function MarketScreen() {
         </>
     )
 
+    const renderItem = ({ item }) => {
+        return (<ListItem
+            name={item.name}
+            symbol={item.symbol}
+            currentPrice={item.current_price}
+            price_change_percentage_24h={item.price_change_percentage_24h}
+            logoUrl={item.image}
+            onPress={() => {
+                navigation.navigate("MyTopTabs", { selectedCoin: item })
+            }}
+            onLongPress={() => {
+                changeModalVisibility(true)
+                setSelectedCoin(item)
+            }}
+        />)
+    }
 
+    const renderFooter = () => {
+        return (
+            isLoading ?
+                <View style={{ marginTop: 10, alignItems: 'center' }}>
+                    <ActivityIndicator size="large" />
+                </View> : null
+        )
+    }
+
+    const handleLoadMore = () => {
+        console.log("güncel pagecurrent: ", pageCurrent)
+        if (!isLoading) {
+            setPageCurrent(pageCurrent + 1)
+            setIsLoading(true)
+        }
+    }
+
+    const handleRefreshData = () => {
+        setIsRefreshing(true)
+        getAllCoins(25, 1).then((response) => {
+            setAllCoins(response.data)
+            setIsRefreshing(false)
+            console.log("Yeni datalar geldi: ", response.data.length)
+        }).catch((error) => {
+        })
+
+    }
 
 
     return (
-
         <View style={styles.container}>
 
             <FlatList
@@ -94,23 +155,13 @@ export default function MarketScreen() {
                 showsVerticalScrollIndicator={false}
                 showsHorizontalScrollIndicator={false}
                 initialNumToRender={25}
-                renderItem={({ item }) => (
-                    <ListItem
-                        name={item.name}
-                        symbol={item.symbol}
-                        currentPrice={item.current_price}
-                        price_change_percentage_24h={item.price_change_percentage_24h}
-                        logoUrl={item.image}
-                        onPress={() => {
-                            navigation.navigate("MyTopTabs", { selectedCoin: item })
-                        }}
-                        onLongPress={() => {
-                            changeModalVisibility(true)
-                            setSelectedCoin(item)
-                        }}
-                    />
-                )}
+                renderItem={renderItem}
+                refreshing={isRefreshing}
+                onRefresh={handleRefreshData}
+                ListFooterComponent={renderFooter}
                 ListHeaderComponent={<ListHeader />}
+                onEndReached={handleLoadMore}
+                onEndReachedThreshold={0.5}
             />
 
             <Modal

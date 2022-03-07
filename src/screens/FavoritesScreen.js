@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, Modal } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getAllCoins, getCoin } from '../api/apiCalls';
+import { getAllCoins, getCoin, getFavoritedCoinsByIds } from '../api/apiCalls';
 import ListItem from '../components/ListItem';
 import { useFocusEffect } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
@@ -17,8 +17,8 @@ import moment from 'moment';
 export default function FavoritesScreen() {
 
     const [favoritedCoins, setFavoritedCoins] = useState([])
-    const [allCoins, setAllCoins] = useState([])
     const [favoritedCoinDatas, setFavoritedCoinDatas] = useState([])
+    const [allCoins, setAllCoins] = useState([])
     const [renderList, setRenderList] = useState(false)
     const [isRunning, setIsRunning] = useState(true);
     const funRef = useRef(null);
@@ -31,123 +31,121 @@ export default function FavoritesScreen() {
 
     useFocusEffect(
         React.useCallback(() => {
-            if (isRunning) {
-                console.log("favoritesscreen focused")
-                getFavorites()//güncel takip listesini al
-                funRef.current = setInterval(() => { // Save reference to interval.
-                    fetchAllCoins()
-                    console.log("favoritesscreen interval working")
-                }, 1000);
-            }
+            console.log("favoritesscreen focused")
+            getFavorites()//güncel takip listesini al
+
             return () => {
                 console.log("favoritesscreen unfocused")
                 clearInterval(funRef.current); // Stop the interval.
+                setIsRunning(false)
             };
         }, [])
     );
 
-    const changeModalVisibility = (bool) => {
-        setIsModalVisible(bool)
-    }
 
-    const setData = (option, index) => {
-        console.log("Seçilen option & index :", option, index)
-        switch (index) {
-            case 0:
-                console.log("Silinecek coin:", selectedCoin)
-                removeFromFavorites(selectedCoin)
-                break;
-            case 1:
-                break;
-            default:
-                break;
-        }
-    }
+    useEffect(() => {//favoritedCoins her değiştiğinde ona göre verileri getir
+
+
+        return () => {
+
+        };
+    }, [favoritedCoins])
+
+    useFocusEffect(
+        React.useCallback(() => {
+
+            interval = setInterval(() => {
+                if (favoritedCoins.length > 0) {
+                    console.log("çalıştırmadan önce favoritedCoins:", favoritedCoins)
+                    //prepare string for request
+                    let favoritedCoinsString = "";
+                    favoritedCoins.forEach((favoritedCoin) => {
+                        // console.log("eklenecek id:", favoritedCoin.id)
+                        favoritedCoinsString = favoritedCoinsString.concat(favoritedCoin.id, ",")
+                    })
+                    console.log("kullanılacak favoritedCoinsString:", favoritedCoinsString)
+                    fetchAllCoins(favoritedCoinsString)
+                }
+            }, 1000);
+
+            return () => {
+                console.log("clear interval triggered")
+                clearInterval(interval)
+            }
+        }, [favoritedCoins])
+    );
+
 
 
     useEffect(() => {
-        console.log("favoritedCoinDatas:", favoritedCoinDatas)
-
-        if (favoritedCoinDatas.length > 0) {
-            let render = true
-            favoritedCoinDatas.forEach((favoritedCoin) => {
-                console.log("data type: ", typeof favoritedCoin.current_price)
-                if (typeof favoritedCoin.current_price === 'undefined') {
-                    console.log("undefined var")
-                    render = false
-                }
+        if (favoritedCoins.length > 0 && allCoins.length > 0) {
+            const list = []
+            // console.log("İşlenecek favoritedCoins:", favoritedCoins)
+            //console.log("İşlenecek allCoins:", allCoins)
+            allCoins.forEach((coin) => {
+                favoritedCoins.forEach((favoritedCoin) => {
+                    if (coin.id === favoritedCoin.id) {
+                        coin.favoritedTime = favoritedCoin.favoritedTime
+                        list.push(coin)
+                    }
+                })
             })
-            setRenderList(render)
-            console.log("render: ", render)
+            // console.log("işleme sonucu list:", list)
+            list.sort((a, b) => moment(a.favoritedTime).diff(moment(b.favoritedTime)))
+            setFavoritedCoinDatas(list)
+        }
+    }, [allCoins])
+
+
+    useEffect(() => {
+        console.log("eldeki favoritedCoinDatas: ", favoritedCoinDatas)
+        if (favoritedCoinDatas.length != 0) {
+            setRenderList(true)
+        } else {
+            setRenderList(false)
         }
     }, [favoritedCoinDatas])
 
 
-    useEffect(() => {//add datas of favorited coins
-        var list = []
-        var isSync = false
-        allCoins.forEach((coin, coinIndex) => {
-            favoritedCoinDatas.forEach((favoritedCoinData, favoritedCoinDataIndex) => {
-                if (coin.id === favoritedCoinData.id && favoritedCoins.length === favoritedCoinDatas.length) {//if allcoins are already setted into favoritedCoinDatas in state
-                    isSync = true
-                    console.log("im updating")
-                    setFavoritedCoinDatas(favoritedCoinDatas => {
-                        let newArr = [...favoritedCoinDatas]; // copying the old datas array
-                        newArr[favoritedCoinDataIndex] = allCoins[coinIndex]; // replace e.target.value with whatever you want to change it to
-                        return newArr
-                    })
-                }
-            })
+    const fetchAllCoins = (favoritedCoinsString) => {//favori listesini al ve coinDataları çekip set et
 
-            if (!isSync && favoritedCoins.find(favoritedCoin => favoritedCoin.id === coin.id) ? true : false) {//if allcoins are not setted into favoritedCoinDatas, push them into array and set it 
-                console.log("im adding")
-                var favoritedCoinObject = favoritedCoins.filter(obj => { return obj.id === coin.id })
-                coin.favoritedTime = favoritedCoinObject[0].favoritedTime
-                list.push(coin)
-            }
-        })
-        if (list.length > 0) {//if there is data in list, set it to favoritedCoinDatas 
-            list.sort((a, b) => moment(a.favoritedTime).diff(moment(b.favoritedTime)))
-            setFavoritedCoinDatas(list)
-        }
-
-    }, [allCoins, favoritedCoins])
-
-
-    const fetchAllCoins = () => {
-
-        getAllCoins(25, 1).then((response) => {
-            console.log("gelen response:", response.data)
+        console.log("merged string:", favoritedCoinsString)
+        getFavoritedCoinsByIds(favoritedCoinsString).then((response) => {
+            //console.log("arama sonucu response: ", response.data)
             setAllCoins(response.data)
         })
     }
 
-    const getFavorites = async () => {
-        //firebase'den güncel takip listesini çek ve state'e at
 
+
+    const getFavorites = () => {
+        //firebase'den güncel takip listesini çek ve state'e at
         const subscriber = firestore()
             .collection('users')
             .doc(`user-${auth().currentUser?.uid}`)
             .collection('favorites')
             .onSnapshot(documentSnapshot => {
-                const ids = []
+                const favorites = []
                 console.log("favorites documentSnapshot", documentSnapshot)
-                documentSnapshot.forEach(documentSnapshot => {
-                    //console.log("favorited coin from firestore", documentSnapshot._data.id);
-                    ids.push({
-                        id: documentSnapshot._data.id,
-                        favoritedTime: documentSnapshot._data.favoritedTime
+                documentSnapshot._docs.forEach(doc => {
+                    console.log("favorited coin from firestore", doc._data.id);
+                    favorites.push({
+                        id: doc._data.id,
+                        favoritedTime: doc._data.favoritedTime
                     })
                 });
+                
 
-                if (ids.length !== 0) {
-                    console.log("favoritedCoins are exists")
-                    setFavoritedCoins(ids)
+                console.log("favoritedCoins güncellenecek:", favorites)
+                if (favorites.length !== 0) {
+                    console.log("setFavoritedCoins | set ediyorum:", favorites)
                     setNotifyEmptyList(false)
                 } else {
                     console.log("favoritedCoins is empty")
+                    setFavoritedCoinDatas([])
                     setNotifyEmptyList(true)
                 }
+                setFavoritedCoins(favorites)
             })
         return () => subscriber();
     }
@@ -161,12 +159,31 @@ export default function FavoritesScreen() {
         </>
     )
 
+
+    const changeModalVisibility = (bool) => {
+        setIsModalVisible(bool)
+    }
+
+    const setData = (option, index) => {
+        console.log("Seçilen option & index :", option, index)
+        switch (index) {
+            case 0:
+                console.log("Silinecek coin:", selectedCoin)
+                removeFromFavorites(selectedCoin)
+                setFavoritedCoinDatas(favoritedCoinDatas.filter(item => item.id !== selectedCoin.id));//api response'u ile gelen update'i beklemeden direkt state'den temizle
+                break;
+            case 1:
+                break;
+            default:
+                break;
+        }
+    }
+
     return (
 
         <View style={styles.container} >
             <ListHeader />
             {
-
                 notifyEmptyList ?
                     <View style={styles.notifyEmptyList}>
                         <Text style={styles.notifyEmptyListText}>You don't have any favorites</Text>
@@ -187,47 +204,48 @@ export default function FavoritesScreen() {
                         />
                     </View>
                     :
-                    renderList ? (<FlatList
-                        keyExtractor={(item) => item.id}
-                        data={favoritedCoinDatas}
-                        showsVerticalScrollIndicator={false}
-                        showsHorizontalScrollIndicator={false}
-                        renderItem={({ item }) => (
-                            <ListItem
-                                name={item.name}
-                                symbol={item.symbol}
-                                currentPrice={item.current_price}
-                                price_change_percentage_24h={item.price_change_percentage_24h}
-                                logoUrl={item.image}
-                                onPress={() => {
-                                    navigation.navigate("MyTopTabs", { selectedCoin: item })
-                                }}
-                                onLongPress={() => {
-                                    changeModalVisibility(true)
-                                    setSelectedCoin(item)
-                                }}
-                            />
-                        )}
+                    renderList ?
+                        (<FlatList
+                            keyExtractor={(item) => item.id}
+                            data={favoritedCoinDatas}
+                            showsVerticalScrollIndicator={false}
+                            showsHorizontalScrollIndicator={false}
+                            renderItem={({ item }) => (
+                                <ListItem
+                                    name={item.name}
+                                    symbol={item.symbol}
+                                    currentPrice={item.current_price}
+                                    price_change_percentage_24h={item.price_change_percentage_24h}
+                                    logoUrl={item.image}
+                                    onPress={() => {
+                                        navigation.navigate("MyTopTabs", { selectedCoin: item })
+                                    }}
+                                    onLongPress={() => {
+                                        changeModalVisibility(true)
+                                        setSelectedCoin(item)
+                                    }}
+                                />
+                            )}
 
-                    />) : (
-                        <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                            <LottieView
-                                source={require('../assets/loading.json')}
-                                autoPlay
-                                loop={true}
-                                style={{
-                                    width: 80,
-                                    height: 80,
-                                    marginBottom: 8,
-                                }}
-                                speed={0.5}
-                                onAnimationFinish={() => {
-                                    //console.log('Animation Finished!')
-                                    // this.props.navigation.replace('Home');
-                                }}
-                            />
-                        </View>
-                    )
+                        />) : (
+                            <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                                <LottieView
+                                    source={require('../assets/loading.json')}
+                                    autoPlay
+                                    loop={true}
+                                    style={{
+                                        width: 80,
+                                        height: 80,
+                                        marginBottom: 8,
+                                    }}
+                                    speed={0.5}
+                                    onAnimationFinish={() => {
+                                        //console.log('Animation Finished!')
+                                        // this.props.navigation.replace('Home');
+                                    }}
+                                />
+                            </View>
+                        )
 
             }
 
@@ -245,8 +263,6 @@ export default function FavoritesScreen() {
                 />
 
             </Modal>
-
-
         </View>
 
     );

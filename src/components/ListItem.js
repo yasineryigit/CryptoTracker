@@ -21,7 +21,7 @@ const ListItem = ({ name, symbol, currentPrice, price_change_percentage_24h, log
                 {/* Right side */}
                 <View style={styles.rightWrapper}>
                     <Text style={styles.title}>${currentPrice.toLocaleString('en-US', { currency: 'USD' })}</Text>
-                    <Text style={[styles.subtitle, { color: priceChangeColor }]}>{price_change_percentage_24h.toFixed(2)}%</Text>
+                    <Text style={[styles.subtitle, { color: priceChangeColor }]}>{price_change_percentage_24h?.toFixed(2)}%</Text>
                 </View>
 
             </View>
