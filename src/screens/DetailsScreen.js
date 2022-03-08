@@ -29,6 +29,7 @@ export default function DetailsScreen(props) {
     const [favoritedCoinIds, setFavoritedCoinIds] = useState()
     const [isFavorited, setIsFavorited] = useState()
     const [userResponse, setUserResponse] = useState()
+    const [commentLength, setCommentLength] = useState()
 
     useEffect(() => {
 
@@ -44,6 +45,7 @@ export default function DetailsScreen(props) {
 
             return () => {
                 console.log("details screen focused")
+                //setComments(null)//commentlar temizlenebilir
             };
         }, [])
     );
@@ -111,6 +113,7 @@ export default function DetailsScreen(props) {
 
     useEffect(() => {
         if (typeof userResponse !== 'undefined') {
+            console.log("total comments length: ", commentLength)
             setComments(previousComment => [...previousComment, userResponse])//add new comment
             //sort comments list
             setComments(prevData => {
@@ -129,6 +132,8 @@ export default function DetailsScreen(props) {
             .doc(id)
             .collection('comments')
             .onSnapshot(documentSnapshot => {
+                setCommentLength(documentSnapshot._docs.length)
+
                 let comments = []
                 console.log("comments documentSnapshot", documentSnapshot)
                 documentSnapshot._docs.forEach(item => {//her bir comment'a ait user bilgilerini çek ve listeye at
@@ -239,7 +244,7 @@ export default function DetailsScreen(props) {
                     }
                     {
 
-                        (typeof comments !== 'undefined' && comments.length != 0) &&
+                        (typeof comments !== 'undefined' && comments.length != 0 && comments.length === commentLength) &&
                         <View style={{ ...styles.upperTitles, marginHorizontal: 5 }}>
                             <Icon name="chatbubble-outline" color='black' size={18} />
                             <Text>{comments.length}</Text></View>
@@ -290,7 +295,7 @@ export default function DetailsScreen(props) {
                     </Button>
 
                     {
-                        comments ?
+                        (typeof comments != 'undefined' && comments.length === commentLength) ?
                             comments.map((comment) => (
                                 <View key={comment.commentDate}>
                                     <View style={styles.upperTitles}>
