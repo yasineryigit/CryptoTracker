@@ -111,6 +111,7 @@ export default function DetailsScreen(props) {
         return () => subscriber();
     }
 
+
     useEffect(() => {
         if (typeof userResponse !== 'undefined') {
             console.log("total comments length: ", commentLength)
@@ -223,7 +224,6 @@ export default function DetailsScreen(props) {
     }
 
 
-
     const ShowCommentAndFavoritedCount = () => (
         <View style={styles.upperTitles}>
             <Text style={styles.largeTitle}>Comments</Text>
@@ -243,7 +243,6 @@ export default function DetailsScreen(props) {
                         (favoritedCount !== 0) && <Text>{favoritedCount}</Text>
                     }
                     {
-
                         (typeof comments !== 'undefined' && comments.length != 0 && comments.length === commentLength) &&
                         <View style={{ ...styles.upperTitles, marginHorizontal: 5 }}>
                             <Icon name="chatbubble-outline" color='black' size={18} />
@@ -338,7 +337,7 @@ export default function DetailsScreen(props) {
                             </View>
                     }
                     {
-                        (typeof comments !== 'undefined' && comments.length == 0) &&
+                        (typeof comments !== 'undefined' && commentLength == 0) &&
                         (<View style={{ justifyContent: 'center', alignItems: 'center' }}>
                             <Text>There is no comment yet</Text>
                             <Text>Be the first!</Text>
