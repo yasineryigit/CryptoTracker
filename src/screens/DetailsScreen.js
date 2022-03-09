@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Linking, SafeAreaView } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Chart from '../components/Chart'
-import { getNewsByName } from '../api/apiCalls';
+import { getCoin, getFavoritedCoinsByIds, getNewsByName } from '../api/apiCalls';
 import News from '../components/News';
 import moment from 'moment';
 import TextInput from '../components/TextInput';
@@ -21,8 +21,9 @@ export default function DetailsScreen(props) {
 
     const navigation = useNavigation();
     const myState = useSelector(state => state)
-    const selectedCoin = props.route.params.selectedCoin;
-    const [formattedData, setFormattedData] = useState(null)
+    const selectedCoinProp = props.route.params.selectedCoin
+    const [coinData, setCoinData] = useState()
+    const [formattedData, setFormattedData] = useState()
     const [comment, setComment] = useState("")
     const [comments, setComments] = useState()
     const [favoritedCount, setFavoritedCount] = useState(0)
@@ -32,16 +33,13 @@ export default function DetailsScreen(props) {
     const [commentLength, setCommentLength] = useState()
 
     useEffect(() => {
-
+        getCoinDetails()
     }, [])
 
     useFocusEffect(
         React.useCallback(() => {
             console.log("details screen focused")
-            console.log("formatlanacak selectedCoin:", selectedCoin);
-            getCoinDetails()
             fetchFavorites()
-            setFormattedData(formatMarketData(selectedCoin));
 
             return () => {
                 console.log("details screen focused")
@@ -51,21 +49,39 @@ export default function DetailsScreen(props) {
     );
 
 
+    useFocusEffect(
+        React.useCallback(() => {
+            interval = setInterval(() => {
+                //selectedCoinProp.id için interval içinde arama yap
+                getFavoritedCoinsByIds(selectedCoinProp.id).then((response) => {
+                    console.log("details page gelen response : ", response.data[0])
+                    setCoinData(response.data[0])
+                })
+            }, 5000);
+            return () => {
+                clearInterval(interval)
+            }
+        }, [])
+    );
+
+
     useEffect(() => {
-        console.log("formattedData:", formattedData)
-
-    }, [formattedData])
+        console.log("coin data değişti, set ediyorum:", coinData)
+        if (typeof coinData !== 'undefined') {
+            setFormattedData(formatMarketData(coinData));
+        }
+    }, [coinData])
 
 
     useEffect(() => {
-
         console.log("eldeki comments: ", comments)
 
     }, [comments])
 
+
     useEffect(() => {
-        if (typeof favoritedCoinIds !== 'undefined') {
-            favoritedCoinIds.includes(selectedCoin.id) ? setIsFavorited(true) : setIsFavorited(false)
+        if (typeof favoritedCoinIds !== 'undefined' && typeof coinData !== 'undefined') {
+            favoritedCoinIds.includes(coinData.id) ? setIsFavorited(true) : setIsFavorited(false)
         }
     }, [favoritedCoinIds])
 
@@ -95,10 +111,11 @@ export default function DetailsScreen(props) {
     const getCoinDetails = () => {
         getComments()
         getFavoritedCountFromFirestore()
+
     }
 
     const getFavoritedCountFromFirestore = () => {
-        const id = selectedCoin.id
+        const id = selectedCoinProp.id
         const subscriber = firestore()
             .collection('coins')
             .doc(id)
@@ -127,7 +144,7 @@ export default function DetailsScreen(props) {
 
     const getComments = () => {
         console.log("GET COMMENTS TRIGGERED")
-        const id = selectedCoin.id
+        const id = selectedCoinProp.id
         const subscriber = firestore()
             .collection('coins')
             .doc(id)
@@ -164,8 +181,8 @@ export default function DetailsScreen(props) {
 
     const sendComment = () => {
         const commentUuid = uuid.v4()
-        if (comment !== "") {
-            const id = selectedCoin.id
+        if (comment !== "" && typeof coinData !== "undefined") {
+            const id = coinData.id
             firestore().collection('coins')
                 .doc(id)
                 .collection('comments')
@@ -178,7 +195,7 @@ export default function DetailsScreen(props) {
                 }).then(() => {
                     console.log(comment, " added")
                     setComment('')
-                    showToast('success', 'Successful', `Comment shared on ${selectedCoin.name} `)
+                    showToast('success', 'Successful', `Comment shared on ${coinData.name} `)
                 })
         } else {
             showToast('info', 'Write something', `Please fill the comment area before you send `)
@@ -219,8 +236,10 @@ export default function DetailsScreen(props) {
     }
 
     const setFavoritedStatus = (status) => {
-        setIsFavorited(status)
-        status ? addToFavorites(selectedCoin) : removeFromFavorites(selectedCoin);
+        if (typeof coinData !== 'undefined') {
+            setIsFavorited(status)
+            status ? addToFavorites(coinData) : removeFromFavorites(coinData);
+        }
     }
 
 
@@ -262,7 +281,7 @@ export default function DetailsScreen(props) {
                 showsHorizontalScrollIndicator={false}
             >
                 {
-                    formattedData ?
+                    (typeof formattedData !== 'undefined') ?
                         (<Chart
                             currentPrice={formattedData.current_price}
                             logoUrl={formattedData.image}
@@ -270,7 +289,23 @@ export default function DetailsScreen(props) {
                             symbol={formattedData.symbol}
                             priceChangePercentage7d={formattedData.price_change_percentage_7d_in_currency}
                             sparkline={formattedData?.sparkline_in_7d.price}
-                        />) : null
+                        />) : <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                            <LottieView
+                                source={require('../assets/loading.json')}
+                                autoPlay
+                                loop={true}
+                                style={{
+                                    width: 80,
+                                    height: 80,
+                                    marginBottom: 8,
+                                }}
+                                speed={0.5}
+                                onAnimationFinish={() => {
+                                    //console.log('Animation Finished!')
+                                    // this.props.navigation.replace('Home');
+                                }}
+                            />
+                        </View>
                 }
                 <View style={styles.divider} />
 

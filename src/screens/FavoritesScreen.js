@@ -108,7 +108,6 @@ export default function FavoritesScreen() {
     }
 
 
-
     const getFavorites = () => {
         //firebase'den güncel takip listesini çek ve state'e at
         const subscriber = firestore()
@@ -125,7 +124,6 @@ export default function FavoritesScreen() {
                         favoritedTime: doc._data.favoritedTime
                     })
                 });
-
 
                 console.log("favoritedCoins güncellenecek:", favorites)
                 if (favorites.length != 0) {
@@ -250,7 +248,6 @@ export default function FavoritesScreen() {
                     changeModalVisibility={changeModalVisibility}
                     options={['Remove from favorites', 'Cancel']}
                     setData={setData}
-
                 />
 
             </Modal>
