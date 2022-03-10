@@ -25,7 +25,7 @@ export default function SplashScreen() {
                         //verileri redux'a at
                         console.log("reduxa atılacak veri: ", response._data)
                         dispatch(loginSuccess(response._data))
-                        navigation.replace("MyTabs")
+                        navigation.replace("MyDrawer", { screen: "MyTabs" })
                         console.log(`User logged in successfully ${user.email}`)
                     })
 

@@ -15,6 +15,7 @@ import { createMaterialTopTabNavigator } from '@react-navigation/material-top-ta
 import MyTopTabs from './src/navigation/MyTopTabs';
 import { Provider as StoreProvider } from 'react-redux'
 import configureStore from './src/redux/configureStore';
+import { MyDrawer } from './src/navigation/MyDrawer';
 
 const Stack = createStackNavigator()
 
@@ -33,6 +34,12 @@ const MyStackNavigator = () => {
 
       <Stack.Screen name="MyTopTabs"
         component={MyTopTabs} />
+
+      <Stack.Screen
+        name="MyDrawer"
+        component={MyDrawer}
+        options={{ headerShown: false }}
+      />
 
       <Stack.Screen name="WebViewScreen"
         component={WebViewScreen} />
@@ -57,7 +64,7 @@ const MyStackNavigator = () => {
 
 export default function App() {
   const store = configureStore()//redux içindeki store'u döndüren metodu verdik
-  
+
   return (
     <StoreProvider store={store}>
       <NavigationContainer>
