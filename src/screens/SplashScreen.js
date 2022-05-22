@@ -14,7 +14,6 @@ export default function SplashScreen() {
 
     useEffect(() => {
 
-
         const unsubscribe = auth().onAuthStateChanged(user => {
             if (user) {
                 firestore().collection('users')

@@ -32,8 +32,8 @@ export default function FavoritesScreen() {
     useFocusEffect(
         React.useCallback(() => {
             console.log("favoritesscreen focused")
-            getFavorites()//güncel takip listesini al
-
+            getFavorites()//güncel takip listesini firestore'dan al
+            
             return () => {
                 console.log("favoritesscreen unfocused")
                 clearInterval(funRef.current); // Stop the interval.
@@ -69,6 +69,8 @@ export default function FavoritesScreen() {
 
 
     useEffect(() => {
+        //firestore'daki symboller ile apiden gelen allCoin datasını symbol'e göre eşleştir
+        //daha sonra favoritedTime property'sine göre sırala
         if (favoritedCoins.length > 0 && allCoins.length > 0) {
             const list = []
             // console.log("İşlenecek favoritedCoins:", favoritedCoins)
@@ -235,7 +237,6 @@ export default function FavoritesScreen() {
                                 />
                             </View>
                         )
-
             }
 
             <Modal

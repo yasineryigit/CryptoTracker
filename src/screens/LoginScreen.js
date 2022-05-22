@@ -43,7 +43,7 @@ export default function LoginScreen({ navigation }) {
             //verileri redux'a at
             console.log("reduxa atılacak veri: ", response._data)
             dispatch(loginSuccess(response._data))
-            navigation.replace("MyTabs")
+            navigation.replace("MyDrawer", { screen: "MyTabs" })
           })
 
       }).catch(err => {

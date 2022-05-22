@@ -34,13 +34,14 @@ export default function DetailsScreen(props) {
 
     useEffect(() => {
         getCoinDetails()
+       
     }, [])
 
     useFocusEffect(
         React.useCallback(() => {
             console.log("details screen focused")
             fetchFavorites()
-
+            
             return () => {
                 console.log("details screen focused")
                 //setComments(null)//commentlar temizlenebilir
@@ -80,10 +81,13 @@ export default function DetailsScreen(props) {
 
 
     useEffect(() => {
-        if (typeof favoritedCoinIds !== 'undefined' && typeof coinData !== 'undefined') {
-            favoritedCoinIds.includes(coinData.id) ? setIsFavorited(true) : setIsFavorited(false)
+        if (typeof favoritedCoinIds !== 'undefined') {
+            //for heart
+            favoritedCoinIds.includes(selectedCoinProp.id) ? setIsFavorited(true) : setIsFavorited(false)
         }
     }, [favoritedCoinIds])
+
+    
 
 
 
@@ -182,18 +186,24 @@ export default function DetailsScreen(props) {
     const sendComment = () => {
         const commentUuid = uuid.v4()
         if (comment !== "" && typeof coinData !== "undefined") {
+            //implement bad word filter 
+            var Filter = require('bad-words'),
+                filter = new Filter();
+
             const id = coinData.id
+            let filteredComment = filter.clean(comment)
+
             firestore().collection('coins')
                 .doc(id)
                 .collection('comments')
                 .doc(`comment-${commentUuid}`)
                 .set({
-                    comment,
+                    comment: filteredComment,
                     commentUuid,
                     commentDate: moment().format(),
                     userUuid: auth().currentUser?.uid
                 }).then(() => {
-                    console.log(comment, " added")
+                    console.log(filteredComment, " added")
                     setComment('')
                     showToast('success', 'Successful', `Comment shared on ${coinData.name} `)
                 })

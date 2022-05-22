@@ -43,7 +43,7 @@ export default function RegisterScreen({ navigation }) {
               userFirstName,
               userLastName
             }))
-            navigation.replace("MyTabs")
+            navigation.replace("MyDrawer", { screen: "MyTabs" })
             //verileri redux'a at
             console.log("register response : ", response)
             console.log(`User created successfully ${user.email}`)

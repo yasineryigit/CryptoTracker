@@ -15,7 +15,7 @@ export default function CoinNewsScreen(props) {
             setNews(response)
         })
     }, [])
-
+    
 
     return (
         <ScrollView showsVerticalScrollIndicator={false}>

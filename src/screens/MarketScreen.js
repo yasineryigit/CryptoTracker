@@ -36,24 +36,17 @@ export default function MarketScreen() {
         React.useCallback(() => {
             console.log("gelen redux verisi:", myState);
             if (isRunning) {
-                funRef.current = setInterval(() => { // Save reference to interval.
+              
                     setIsLoading(true)
                     getCoins(25, pageCurrent)
-                }, 1000);
+              
             }
             return () => {
-                clearInterval(funRef.current); // Stop the interval.
+              
             };
         }, [pageCurrent])
     );
 
-    /*
-useEffect(() => {
-    console.log("at the beginning, pageCurrent useEffect triggered")
-    setIsLoading(true)
-    getCoins(25, pageCurrent)
-}, [pageCurrent])
-*/
 
     useEffect(() => {
 
@@ -61,8 +54,7 @@ useEffect(() => {
 
     }, [allCoins])
 
-
-
+    
     const getCoins = (per_page, pageCurrent) => {
         getAllCoins(per_page, pageCurrent).then((response) => {
             setAllCoins(allCoins.concat(response.data))
