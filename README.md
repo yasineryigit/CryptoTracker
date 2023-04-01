@@ -23,6 +23,7 @@ react-native run-ios
 <img src="https://github.com/yasineryigit/CryptoTracker/blob/master/screenshoots/1.png" width="250" height="539" />
 <img src="https://github.com/yasineryigit/CryptoTracker/blob/master/screenshoots/2.png" width="250" height="539" />
 <img src="https://github.com/yasineryigit/CryptoTracker/blob/master/screenshoots/3.png" width="250" height="539" />
+<img src="https://github.com/yasineryigit/CryptoTracker/blob/master/screenshoots/4.png" width="250" height="539" />
 
 
 
